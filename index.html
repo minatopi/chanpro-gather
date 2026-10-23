@@ -20,7 +20,8 @@
 <p>chanpro-gather と共通アカウント</p>
 <input id=loginName placeholder=ユーザー名 style="width:100%;padding:12px;margin:5px 0">
 <input id=loginPassword placeholder=パスワード style="width:100%;padding:12px;margin:5px 0" type=password>
-<button class=primary onclick=login() style=width:100%;margin-top:10px>ログイン</button>
+<div id="loginStatus" role="status" aria-live="polite" style="display:none;text-align:center;color:#1d9bf0;font-weight:700;margin-top:10px">ログイン中...</div>
+<button id="loginButton" class=primary onclick=login() style=width:100%;margin-top:10px>ログイン</button>
 <button class=secondary onclick=createAccount() style=width:100%;margin-top:8px>新規アカウント作成</button>
 <div id=loginError style=color:#f4212e;margin-top:10px>
 </div>
@@ -676,7 +677,7 @@ body.gather-fullscreen-chat #gatherParticipantsButton{display:none!important}
 &lt;/style&gt;
 &lt;script id=&quot;gather-chat-quiet-console-final&quot;&gt;try{console.log=function(){};}catch(_){}&lt;/script&gt;" title=chanpro-gather></iframe>
 <style id=chanpro-home-chat-style>:root{--gather-chat-width:390px}body,html{width:100%;max-width:100%;overflow-x:hidden!important}.app{display:grid!important;grid-template-columns:220px minmax(0,1fr) 270px var(--gather-chat-width,390px)!important;max-width:100%!important;width:100%!important;gap:0!important;justify-content:stretch!important;align-items:stretch!important;min-width:0!important}.sidebar{grid-column:1;min-width:0;z-index:20}.main{grid-column:2;min-width:0!important;width:100%!important;max-width:100%!important;overflow-x:clip!important}.rightbar{display:block!important;grid-column:3;grid-row:1;min-width:0!important;width:100%!important;max-width:100%!important;border-right:1px solid #e1e8ed;background:#fff}#homeChatWidget{grid-column:4!important;grid-row:1!important;position:sticky!important;top:0!important;align-self:start!important;width:var(--gather-chat-width,390px)!important;min-width:0!important;max-width:100%!important;height:100vh!important;height:100dvh!important;min-height:0!important;margin:0!important;resize:none!important;overflow:hidden!important;box-sizing:border-box!important;background:#fff;border:0;border-left:1px solid #e1e8ed;border-radius:0;box-shadow:none;display:flex;flex-direction:column}#homeChatWidget.disabled{display:none!important}#homeChatHead{display:none!important;height:0!important;min-height:0!important;padding:0!important;border:0!important}#homeChatSlot{width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;overflow:hidden!important;flex:1 1 auto!important}#homeChatSlot #chatPageFrame{display:block!important;width:100%!important;max-width:100%!important;height:100vh!important;height:100dvh!important;min-height:0!important;border:0!important}#chatPageFrameWrap{padding:0!important;background:#fff;overflow:hidden!important;width:100%!important;max-width:100%!important}#chatPage>.pageHeader{display:none!important}#chatPageFrameWrap #chatPageFrame{height:100dvh!important;min-height:0!important}.post,.post-card,.postCard,.postItem{min-width:0!important;max-width:100%;overflow-wrap:anywhere}@media(max-width:1200px){.app{grid-template-columns:80px minmax(0,1fr) var(--gather-chat-width,390px)!important}.sidebar{grid-column:1;padding:12px 6px!important}.main{grid-column:2!important}.rightbar{display:none!important}#homeChatWidget{grid-column:3!important}}@media(max-width:760px){.app{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important}.sidebar{display:block!important;position:fixed!important;left:0!important;right:0!important;top:auto!important;bottom:0!important;height:60px!important;min-height:60px!important;width:100%!important;z-index:100!important;padding:5px!important;border-top:1px solid #e1e8ed!important;border-bottom:0!important;border-right:0!important;background:#fff!important}.logo,.postButton{display:none!important}.nav{display:flex!important;justify-content:space-around!important;align-items:center!important;gap:0!important}.nav button{margin:0!important;width:auto!important;max-width:20vw!important;padding:10px 7px!important;font-size:0!important;text-align:center!important;white-space:nowrap!important}.nav button:first-letter{font-size:22px!important}.main{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;padding-bottom:70px!important;overflow-x:clip!important}.rightbar{display:none!important}#homeChatWidget{display:none!important}#chatPageFrameWrap{width:100%!important;max-width:100%!important;overflow:hidden!important}#chatPageFrameWrap #chatPageFrame{display:block!important;width:100%!important;max-width:100%!important;height:calc(100dvh - 60px)!important;min-height:0!important;border:0!important}#chatPage{width:100%!important;max-width:100%!important;overflow:hidden!important}}</style>
-<script id=chanpro-home-chat-integration>!function(){const e=e=>document.getElementById(e);let t=!1,n=null;async function a(e,t={}){if(!currentUser?.id)throw new Error("ログインしてください");const n=supabaseClient,a=currentUser.id,o=["admin","developer"].includes(currentUser.role),r=e=>{if(e)throw new Error(e.message||String(e))},s=async e=>{const{data:t,error:o}=await n.from("users").update(e).eq("id",a).select("*").single();return r(o),t&&(currentUser={...currentUser,...t},cache.users.set(a,currentUser)),t};if("user-update"===e){const e={};void 0!==t.newUsername&&(e.username=String(t.newUsername).trim()),void 0!==t.newPassword&&(e.password_hash=await hashPassword(String(t.newPassword)));for(const n of["icon_url","cover_url","profile","program_urls","profile_music"])void 0!==t[n]&&(e[n]=t[n]);if(void 0!==t.settings&&(e.settings={...currentUser.settings||{},...t.settings}),!Object.keys(e).length)throw new Error("変更内容がありません");const n=await s(e);return void 0!==t.newPassword&&(currentRawPassword=String(t.newPassword),currentPasswordHash=e.password_hash),{ok:!0,user:n,message:"アカウント情報を更新しました"}}if("user-settings"===e){const e=["home_chat_enabled","manual_chat_join","default_chat_room","chat_sound_enabled","chat_theme"],n={};for(const a of e)Object.prototype.hasOwnProperty.call(t.settings||{},a)&&(n[a]=t.settings[a]);return{ok:!0,settings:(await s({settings:{...currentUser.settings||{},...n}})).settings}}if("post-pin"===e){const{data:e,error:o}=await n.from("posts").select("id,user_id,is_pinned").eq("id",t.postId).maybeSingle();if(r(o),!e)throw new Error("投稿が見つかりません");if(e.user_id!==a)throw new Error("自分の投稿だけ固定できます");if(t.pinned){const{error:e}=await n.from("posts").update({is_pinned:!1}).eq("user_id",a).eq("is_pinned",!0);r(e)}const{error:s}=await n.from("posts").update({is_pinned:!!t.pinned}).eq("id",t.postId).eq("user_id",a);return r(s),{ok:!0,pinned:!!t.pinned}}if("post-delete"===e){const e=t.postId,{data:s,error:i}=await n.from("posts").select("id,user_id").eq("id",e).maybeSingle();if(r(i),!s)throw new Error("投稿が見つかりません");if(s.user_id!==a&&!o)throw new Error("削除権限がありません");const{error:c}=await n.from("posts").delete().eq("id",e);return r(c),{ok:!0,message:"投稿を削除しました"}}if("post-view"===e){const{data:e,error:o}=await n.from("posts").select("id,user_id,views").eq("id",t.postId).maybeSingle();if(r(o),!e)throw new Error("投稿が見つかりません");if(e.user_id===a)return{ok:!0,views:Number(e.views||0)};const s=Number(e.views||0)+1,{error:i}=await n.from("posts").update({views:s}).eq("id",e.id);return r(i),{ok:!0,views:s}}if("dm-list"===e){const e=()=>{let e=n.from("messages").select("id,sender_id,receiver_id,content,created_at");return t.withUserId?e.or(`and(sender_id.eq.${a},receiver_id.eq.${t.withUserId}),and(sender_id.eq.${t.withUserId},receiver_id.eq.${a})`).order("created_at",{ascending:!0}):e.or(`sender_id.eq.${a},receiver_id.eq.${a}`).order("created_at",{ascending:!1})},o=[];for(let t=0;;t+=1e3){const{data:n,error:a}=await e().range(t,t+999);if(r(a),n?.length&&o.push(...n),!n||n.length<1e3)break}return{ok:!0,messages:o}}if("dm-send"===e){const e=String(t.content||"").trim();if(!t.recipientId||!e)throw new Error("宛先とメッセージを入力してください");const{data:o,error:s}=await n.from("messages").insert({sender_id:a,receiver_id:t.recipientId,content:e}).select("id,sender_id,receiver_id,content,created_at").single();return r(s),{ok:!0,message:o}}if("account-delete"===e){const{error:e}=await n.from("users").delete().eq("id",a);return r(e),currentUser=null,currentRawPassword="",safeRemove("chanpro_post_user"),location.reload(),{ok:!0,message:"アカウントを削除しました"}}if("admin-user-update"===e){if(!o)throw new Error("管理者権限が必要です");const e=t.targetUserId;if(!e)throw new Error("対象ユーザーが必要です");if(t.deleteAccount){const{error:t}=await n.from("users").delete().eq("id",e);return r(t),{ok:!0,message:"ユーザーを削除しました"}}const a={};void 0!==t.role&&(a.role=t.role),void 0!==t.verified&&(a.verified=!!t.verified),void 0!==t.banUntil&&(a.ban_until=t.banUntil);const{data:s,error:i}=await n.from("users").update(a).eq("id",e).select("*").maybeSingle();return r(i),{ok:!0,user:s}}if("ban"===e){if(!o)throw new Error("BAN権限がありません");const e=t.targetUserId;if(!e)throw new Error("対象ユーザーが必要です");const s=await getDeviceFingerprint(),i=(new Date).toLocaleDateString("en-CA",{timeZone:"Asia/Tokyo"}),{data:c,error:d}=await n.from("chat_device_bans").select("id").eq("actor_user_id",a).eq("target_user_id",e).eq("actor_device_hash",t.deviceHash||s.hash).eq("ban_date",i).limit(1);if(!d&&c?.length)throw new Error("この端末からこのユーザーへの本日のBANは実行済みです");const{data:u,error:l}=await n.from("users").select("ban_count,points").eq("id",e).single();r(l);const h=new Date(Date.now()+6e4*Math.max(1,Number(t.banMinutes)||5)).toISOString(),{data:m,error:p}=await n.from("user_devices").select("device_hash").eq("user_id",e);r(p);const w=[...new Set((m||[]).map((e=>e.device_hash)).filter(Boolean))],{error:g}=await n.from("users").update({ban_count:Number(u.ban_count||0)+1,ban_until:h,points:Math.max(0,Number(u.points||0)-100)}).eq("id",e);if(r(g),w.length){const{error:o}=await n.from("chat_device_bans").insert(w.map((n=>({actor_user_id:a,target_user_id:e,actor_device_hash:t.deviceHash||s.hash,target_device_hash:n,ban_date:i,ban_until:h}))));r(o)}return{ok:!0,banUntil:h}}if("stamp-purchase"===e){const e=Number(t.amount);if(!Number.isFinite(e)||e<1||Number(currentUser.points||0)<e)throw new Error("ポイントが足りないか、購入情報が不正です");const n=Array.isArray(currentUser.stamp_list)?currentUser.stamp_list:[],a=await s({points:Number(currentUser.points||0)-e,stamp_list:[...n,t.stampUrl]});return{ok:!0,points:a.points,stamp_list:a.stamp_list}}if("transfer-points"===e){const e=Number(t.amount);if(!Number.isInteger(e)||e<1||e>1e3||Number(currentUser.points||0)<e||t.targetUserId===a)throw new Error("ポイント送信内容が不正です");const{data:o,error:i}=await n.from("users").select("id,points").eq("id",t.targetUserId).single();r(i),await s({points:Number(currentUser.points||0)-e});const{error:c}=await n.from("users").update({points:Number(o.points||0)+e}).eq("id",o.id);return r(c),{ok:!0,points:Number(currentUser.points||0)}}if("chat-points"===e){const e=Number(t.amount);if(!Number.isInteger(e)||!e||Math.abs(e)>5e3)throw new Error("ポイント数が不正です");const n=Math.max(0,Number(currentUser.points||0)+e);return{ok:!0,points:(await s({points:n})).points}}if("user-login-streak"===e){const e=(new Date).toLocaleDateString("en-CA",{timeZone:"Asia/Tokyo"}),t=currentUser.last_login_date?String(currentUser.last_login_date).slice(0,10):"";if(t===e)return{ok:!0,awarded:!1,streak:Number(currentUser.login_streak||0),points:Number(currentUser.points||0),bonus:0};let n=t?Number(currentUser.login_streak||0)+1:1;const a=5+(n%7==0?10:0);return{ok:!0,awarded:!0,streak:n,points:(await s({login_streak:n,last_login_date:e,points:Number(currentUser.points||0)+a})).points,bonus:a}}if("weekly-points"===e){const e=new Date,t=(()=>{const t=new Date(Date.UTC(e.getFullYear(),e.getMonth(),e.getDate()));t.setUTCDate(t.getUTCDate()+4-(t.getUTCDay()||7));const n=t.getUTCFullYear(),a=new Date(Date.UTC(n,0,1));return`${n}-W${String(Math.ceil(((t-a)/864e5+1)/7)).padStart(2,"0")}`})(),n=currentUser.last_post_week||"",a=n===t?Number(currentUser.consecutive_post_weeks||0):Number(currentUser.consecutive_post_weeks||0)+1,o=n!==t,r=o?30*a:0;return{ok:!0,awarded:o,points:(await s({points:Number(currentUser.points||0)+r,consecutive_post_weeks:a,last_post_week:t})).points,streak:a,week:t}}if("report"===e){const e=String(t.message||"").trim();if(!e)throw new Error("報告内容を入力してください");const{error:o}=await n.from("gather_reports").insert({user_id:a,username:currentUser.username,content:e});return r(o),{ok:!0,message:"報告を送信しました"}}if("image-register"===e){const{error:e}=await n.from("chat_image_assets").insert({user_id:a,image_url:t.imageUrl,delete_url:t.deleteUrl||null});return r(e),{ok:!0}}throw new Error("未対応の直接操作です: "+e)}async function o(e){try{const t=await a("user-settings",{settings:e});return currentUser.settings=t.settings||{...currentUser.settings||{},...e},!0}catch(e){return"function"==typeof toast&&toast("設定を保存できませんでした: "+e.message),!1}}function r(){const n=currentUser?.settings||{},a=!1!==n.home_chat_enabled&&!1!==window.__gatherHomeChatEnabled,o=Number(window.__gatherHomeChatWidth||n.home_chat_width||390);t=!a;const r=e("homeChatWidget");r&&(r.classList.toggle("disabled",!a),document.querySelector(".app")?.classList.toggle("gather-chat-off",!a),document.documentElement.style.setProperty("--gather-chat-width",Math.max(240,Math.min(760,o))+"px"),r.style.width=Math.max(240,Math.min(760,o))+"px"),e("accountHomeChatEnabled")&&(e("accountHomeChatEnabled").checked=a),e("accountHomeChatWidth")&&(e("accountHomeChatWidth").value=String(o));try{const t=e("chatPageFrame");t?.contentWindow?.setChatSoundEnabled?.(!1!==n.chat_sound_enabled);const a=t?.contentDocument;a&&(["blue","green","red","dark"].forEach((e=>a.body.classList.remove(e))),n.chat_theme&&"blue"!==n.chat_theme&&a.body.classList.add(n.chat_theme),(()=>{if(!a.getElementById("gather-hide-chat-toolbar")){const e=a.createElement("style");e.id="gather-hide-chat-toolbar",e.textContent='#top,#themeMenu,#accountMenu,#notificationArea,#developerNotificationBox,#developerDMModal{display:none!important;height:0!important;min-height:0!important;padding:0!important;margin:0!important;border:0!important}button[onclick="openAccountMenu()"],button[onclick="openDeveloperDM()"],.theme{display:none!important}',a.head.appendChild(e)}})())}catch(e){}}function s(){if(e("accountSettingsPage"))return;const t=document.querySelector(".main");if(!t)return;const n=document.createElement("section");n.id="accountSettingsPage",n.className="hidden",n.innerHTML='<div class="pageHeader">⚙️ アカウント設定 <button type="button" id="accountSettingsClose" style="float:right">閉じる ✕</button></div><h2>アカウント設定</h2><div class="settingsGroup"><h3>ホームの表示</h3><label><input type="checkbox" id="accountHomeChatEnabled" style="width:auto"> ホームにチャットを表示する（オフにするとチャットから退出）</label><label style="display:block;margin-top:10px"><input type="checkbox" id="accountManualChatJoin" style="width:auto" checked> チャットにログイン時に自動で参加しない（「チャットルームに入る」を押すまで接続しない）</label><label style="display:block;margin-top:12px">最初に入るチャットルーム（デフォルトroom）<input id="accountDefaultChatRoom" type="text" maxlength="80" placeholder="例：room" autocomplete="off"></label><p style="color:#536471;font-size:13px;line-height:1.6">設定した部屋名をチャット画面に入力します。接続はチャット画面の「チャットルームに入る」操作で行います。</p></div><div class="settingsGroup"><h3>チャット通知</h3><label><input type="checkbox" id="accountChatSound" style="width:auto"> チャット受信音を鳴らす</label></div><div class="settingsGroup"><h3>テーマカラー</h3><label>チャットのテーマ</label><select id="accountChatTheme"><option value="blue">青</option><option value="green">緑</option><option value="red">赤</option><option value="dark">ダーク</option></select></div><div class="settingsGroup"><h3>アカウント</h3><label>現在のユーザー名（ログイン情報を自動入力）</label><input id="accountAuthUsername" autocomplete="username" placeholder="ログイン中のユーザー名"><label>現在のパスワード（ログイン情報を自動入力）</label><input id="accountCurrentPassword" type="password" autocomplete="current-password" placeholder="ログイン中のパスワード"><label>新しいユーザー名</label><input id="accountNewUsername" maxlength="32" placeholder="新しいユーザー名"><div class="settingsRow"><button class="primary" id="accountUsernameSave">ユーザー名を変更</button></div><label>新しいパスワード</label><input id="accountNewPassword" type="password" autocomplete="new-password" placeholder="新しいパスワード"><div class="settingsRow"><button class="primary" id="accountPasswordSave">パスワードを変更</button></div></div><div class="settingsGroup"><h3>報告</h3><label>報告内容</label><textarea id="accountReportText" rows="4" maxlength="2000" placeholder="不具合・迷惑行為などを報告"></textarea><div class="settingsRow"><button id="accountReportSend">報告を送信</button></div></div><div class="settingsGroup"><h3>アカウント削除</h3><p style="color:#b91c1c;font-size:13px">削除するとアカウントを復元できません。</p><button class="danger" id="accountDeleteButton">アカウントを削除</button></div><div id="accountSettingsStatus" role="status"></div>',t.appendChild(n),e("accountSettingsClose").onclick=e=>{e.preventDefault(),e.stopPropagation(),c()},e("accountHomeChatEnabled").onchange=()=>{window.__gatherHomeChatEnabled=e("accountHomeChatEnabled").checked,r(),o({home_chat_enabled:e("accountHomeChatEnabled").checked})},e("accountManualChatJoin").onchange=()=>{window.__gatherManualChatJoin=e("accountManualChatJoin").checked;try{e("chatPageFrame").contentWindow.__gatherManualChatJoin=window.__gatherManualChatJoin}catch(e){}o({manual_chat_join:window.__gatherManualChatJoin})},e("accountDefaultChatRoom").onchange=()=>{const t=e("accountDefaultChatRoom").value.trim().slice(0,80);o({default_chat_room:t});try{const n=e("chatPageFrame")?.contentDocument?.getElementById("setRoom");n&&(n.value=t)}catch(e){}},e("accountChatSound").checked=!1!==window.chanproChatSoundEnabled,e("accountChatSound").onchange=()=>{window.chanproChatSoundEnabled=e("accountChatSound").checked;try{e("chatPageFrame").contentWindow.setChatSoundEnabled?.(window.chanproChatSoundEnabled)}catch(e){}o({chat_sound_enabled:window.chanproChatSoundEnabled})},e("accountChatTheme").onchange=()=>{try{const t=e("chatPageFrame").contentDocument;["blue","green","red","dark"].forEach((e=>t.body.classList.remove(e))),"blue"!==e("accountChatTheme").value&&t.body.classList.add(e("accountChatTheme").value)}catch(e){}o({chat_theme:e("accountChatTheme").value})},e("accountUsernameSave").onclick=()=>d("username-change",{newUsername:e("accountNewUsername").value.trim()}),e("accountPasswordSave").onclick=()=>d("password-change",{newPassword:e("accountNewPassword").value}),e("accountReportSend").onclick=async()=>{const t=e("accountReportText"),n=e("accountReportSend"),o=e("accountSettingsStatus"),r=String(t?.value||"").trim();if(!currentUser?.id)return o.textContent="先にログインしてください。";if(!r)return o.textContent="報告内容を入力してください。";if(r.length>2000)return o.textContent="報告内容は2000文字以内にしてください。";n.disabled=!0;n.textContent="送信中…";o.textContent="ログイン中のアカウントで報告を送信しています…";try{const s=await a("report",{message:r});o.textContent=s?.message||"報告を送信しました。";t.value=""}catch(e){console.error("報告送信エラー:",e);o.textContent="送信できませんでした: "+(e?.message||String(e));}finally{n.disabled=!1;n.textContent="報告を送信"}},e("accountDeleteButton").onclick=async()=>{await htmlConfirm("アカウントを削除しますか？この操作は取り消せません。")&&await d("account-delete",{})}}function i(){s();const t=document.querySelector(".main");if(!t)return;[...t.children].forEach((e=>{"accountSettingsPage"===e.id?e.classList.remove("hidden"):e.classList.add("hidden")})),e("accountAuthUsername").value=currentUser?.username||window.getChanProSession?.()?.username||"";e("accountCurrentPassword").value=currentRawPassword||"";const n=currentUser?.settings||{};e("accountHomeChatEnabled").checked=!1!==n.home_chat_enabled,e("accountManualChatJoin").checked=!1!==n.manual_chat_join,window.__gatherManualChatJoin=!1!==n.manual_chat_join,e("accountDefaultChatRoom").value=String(n.default_chat_room||""),e("accountChatSound").checked=!1!==n.chat_sound_enabled,e("accountChatTheme").value=n.chat_theme||"blue"}function c(){const t=e("accountSettingsPage");t&&(t.classList.add("hidden"),[...document.querySelector(".main").children].forEach((e=>{"accountSettingsPage"!==e.id&&e.classList.remove("hidden")})))}async function d(t,n){const o=e("accountSettingsStatus"),r=window.getChanProSession?.(),s=e("accountAuthUsername")?.value.trim()||r?.username||"",i=e("accountCurrentPassword")?.value||"";if(s&&i)if("report"!==t||n.message)if("username-change"!==t||n.newUsername)if("password-change"!==t||n.newPassword&&!(n.newPassword.length<8)){o.textContent="処理中…";try{const r="username-change"===t||"password-change"===t?"user-update":t,c=await a(r,{...n,username:s,password:i});o.textContent=c.message||"完了しました。","username-change"===t&&(currentUser&&(currentUser.username=n.newUsername),e("accountAuthUsername").value=n.newUsername,e("accountNewUsername").value=""),"password-change"===t&&(currentRawPassword=n.newPassword,currentPasswordHash=await hashPassword(n.newPassword),e("accountCurrentPassword").value="",e("accountNewPassword").value=""),"report"===t&&(e("accountReportText").value=""),"account-delete"===t&&(safeRemove("chanpro_post_user"),currentUser=null,currentRawPassword="",location.reload())}catch(e){o.textContent="失敗: "+e.message+"\nSupabaseの権限・RLS設定を確認してください。"}}else o.textContent="新しいパスワードは8文字以上にしてください。";else o.textContent="新しいユーザー名を入力してください。";else o.textContent="報告内容を入力してください。";else o.textContent="この操作にはユーザー名と現在のパスワードが必要です。"}function u(t){const n=document.querySelector(".app");n?.classList.remove("chat-fullscreen"),n&&matchMedia("(max-width:760px)").matches?n.classList.toggle("chat-mobile-open",!!t):n?.classList.remove("chat-mobile-open");const a=e("homeChatWidget");a&&(t?(a.classList.remove("disabled"),a.style.display="flex"):r());const o=e("chatPage");o&&o.classList.add("hidden");try{const t=e("chatPageFrame");if(t?.contentWindow){t.contentWindow.__gatherManualChatJoin=window.__gatherManualChatJoin,t.contentWindow.syncChanProSession?.();const e=currentUser?.settings?.default_chat_room||"";if(e){const n=t.contentDocument?.getElementById("setRoom");n&&!n.value.trim()&&(n.value=e)}}}catch(e){}}function l(){document.querySelectorAll("[data-post-id],.postCard,.post-card,.postItem,.post").forEach((e=>{if(e.dataset.chanproQuoteAdded)return;const t=e.dataset.postId||e.getAttribute("data-id");if(!t||!e.querySelector(".postText,.postTextContent,.content"))return;e.dataset.chanproQuoteAdded="1";const a=document.createElement("button");a.type="button",a.textContent="引用",a.style.cssText="margin:6px 0;border:1px solid #cfd9de;border-radius:18px;background:#fff;color:#536471;padding:5px 10px;font-size:12px",a.addEventListener("click",(e=>{e.preventDefault(),e.stopPropagation(),n={type:"post",data:{id:t}},window.quotePostToChat(t)})),e.appendChild(a)}))}window.gatherSecureApi=a,window.gatherBanUser=async function(e,t){return a("ban",{targetUserId:e,deviceHash:await getDeviceHash(),banMinutes:t})},window.addEventListener("message",(async e=>{if("chanpro-open-profile"===e.data?.type&&e.data.username)try{const{data:t}=await window.supabaseClient.from("users").select("id").eq("username",e.data.username).maybeSingle();if(t?.id){c();const e=[...document.querySelectorAll(".nav button")].find((e=>/プロフィール/.test(e.textContent)));e&&e.click(),setTimeout((()=>window.showUserProfile?.(t.id)),100)}}catch(e){console.warn(e)}"chanpro-quote-chat-message"===e.data?.type&&(n={type:"chat",data:e.data.message},openQuoteChooser())})),window.openQuoteChooser=function(){let t=e("chanproQuoteChooser");t||(t=document.createElement("div"),t.id="chanproQuoteChooser",t.innerHTML='<div><h3>引用先を選択</h3><p>この内容をどこに引用しますか？</p><button class="primary" id="quoteToChat">💬 チャットに引用</button><button id="quoteToPost">📝 ポストに引用</button><button id="quoteCancel">キャンセル</button></div>',document.body.appendChild(t),e("quoteCancel").onclick=()=>t.classList.remove("open"),e("quoteToChat").onclick=()=>{t.classList.remove("open"),"post"===n?.type?(u(!1),e("homeChatWidget")?.classList.remove("disabled"),e("chatPageFrame")?.contentWindow?.insertPostQuote?.(n.data)):"chat"===n?.type&&e("chatPageFrame")?.contentWindow?.insertChatQuote?.(n.data)},e("quoteToPost").onclick=()=>{t.classList.remove("open"),function(e){if(c(),!e)return;const t=e.data||e,n=String(t.content||t.text||"").slice(0,500),a=t.username||t.sender_name||"ユーザー",o=t.url||"https://chanpro.jp/00-program-share?log="+encodeURIComponent(t.id||"");let r=document.querySelector('#quickPostText,#modalPostText,#postContent,#postText,#content,[name="content"],.composer textarea');if(!r){const e=document.querySelector("#homePage");e&&e.classList.remove("hidden"),r=document.querySelector(".composer textarea")}r&&(r.value=(r.value?r.value+"\n\n":"")+"【引用】"+a+"\n"+n+"\n"+o+"\n",r.dispatchEvent(new Event("input",{bubbles:!0})),r.focus(),"function"==typeof toast&&toast("引用をポストの入力欄に追加しました"))}(n)}),t.classList.add("open")},window.quotePostToChat=async function(a){try{const{data:o,error:r}=await window.supabaseClient.from("posts").select("id,user_id,content,created_at").eq("id",a).maybeSingle();if(r||!o)throw r||new Error("ポストが見つかりません");const{data:s}=await window.supabaseClient.from("users").select("username").eq("id",o.user_id).maybeSingle();u(!1),e("homeChatWidget")?.classList.remove("disabled"),t=!1,n={type:"post",data:{...o,username:s?.username||"ユーザー",url:location.origin+"/00-program-share?log="+encodeURIComponent(o.id)}},openQuoteChooser()}catch(e){console.error(e),"function"==typeof toast&&toast("ポスト引用に失敗しました")}};const h=window.showPage;"function"==typeof h&&(window.showPage=async function(e,...t){return"chat"===e?(u(!0),await h.call(this,e,...t)):("home"===e&&(c(),u(!1)),await h.call(this,e,...t))}),document.addEventListener("DOMContentLoaded",(()=>{(function(){const t=document.querySelector(".nav");if(t&&(t.querySelectorAll("button").forEach((e=>{/チャット/.test(e.textContent||"")&&e.remove()})),!e("accountSettingsNav"))){const e=document.createElement("button");e.id="accountSettingsNav",e.textContent="⚙️ アカウント設定",e.onclick=e=>{e.preventDefault(),e.stopPropagation(),i()},e.dataset.settingsNav="1",t.appendChild(e)}})(),function(){const t=document.querySelector(".app");if(!e("homeChatWidget")){const e=document.createElement("section");e.id="homeChatWidget",e.innerHTML='<div id="homeChatResizeHandle" role="separator" aria-label="チャット幅を変更" title="ドラッグしてチャット幅を変更"></div><div id="homeChatHead"></div><div id="homeChatSlot"></div>';const n=document.querySelector(".main");n&&n.parentElement===t?n.insertAdjacentElement("afterend",e):t?.appendChild(e)}let n=e("chatPageFrame");n&&n.parentElement!==e("homeChatSlot")&&e("homeChatSlot").appendChild(n),document.querySelector(".app")?.classList.remove("chat-fullscreen"),window.__gatherManualChatJoin=!1!==(currentUser?.settings||{}).manual_chat_join,r(),function(){const t=e("homeChatResizeHandle");if(!t||t.dataset.ready)return;t.dataset.ready="1";let n=!1,a=0,r=390;const s=t=>{const n=(e=>Math.max(240,Math.min(760,e)))(t);window.__gatherHomeChatWidth=n,document.documentElement.style.setProperty("--gather-chat-width",n+"px");const a=e("homeChatWidget");a&&(a.style.width=n+"px")};t.addEventListener("pointerdown",(e=>{matchMedia("(max-width:760px)").matches||(n=!0,a=e.clientX,r=Number(window.__gatherHomeChatWidth||currentUser?.settings?.home_chat_width||390),t.classList.add("dragging"),t.setPointerCapture?.(e.pointerId),e.preventDefault())})),t.addEventListener("pointermove",(e=>{n&&s(r+(a-e.clientX))}));const i=()=>{n&&(n=!1,t.classList.remove("dragging"),o({home_chat_width:Number(window.__gatherHomeChatWidth||390)}))};t.addEventListener("pointerup",i),t.addEventListener("pointercancel",i),window.addEventListener("resize",(()=>{const t=e("homeChatWidget");t&&!document.querySelector(".app")?.classList.contains("chat-fullscreen")&&(t.style.width=(window.__gatherHomeChatWidth||390)+"px")}))}()}(),s(),l(),(()=>{let e=!1;new MutationObserver((t=>{let n=!1;for(const e of t){for(const t of e.addedNodes||[])if(1===t.nodeType&&(t.matches?.("[data-post-id],.postCard,.post-card,.postItem,.post")||t.querySelector?.("[data-post-id],.postCard,.post-card,.postItem,.post"))){n=!0;break}if(n)break}n&&!e&&(e=!0,requestAnimationFrame((()=>{e=!1,l()})))})).observe(document.body,{childList:!0,subtree:!0})})();const t=window.login;"function"==typeof t&&(window.login=async function(...n){const a=await t.apply(this,n);return setTimeout((()=>{try{const t=currentUser||{},n=t.id||window.getChanProSession?.()?.id;n&&window.posthog?.identify&&posthog.identify(String(n),{username:t.username||window.getChanProSession?.()?.username||""}),window.__gatherManualChatJoin=!1!==(t.settings||{}).manual_chat_join,e("chatPageFrame")?.contentWindow&&(e("chatPageFrame").contentWindow.__gatherManualChatJoin=window.__gatherManualChatJoin,e("chatPageFrame").contentWindow.syncChanProSession?.())}catch(e){}}),250),a}),setTimeout((()=>{try{window.__gatherManualChatJoin=!1!==(currentUser?.settings||{}).manual_chat_join,e("chatPageFrame")?.contentWindow&&(e("chatPageFrame").contentWindow.__gatherManualChatJoin=window.__gatherManualChatJoin,e("chatPageFrame").contentWindow.syncChanProSession?.())}catch(e){}}),500)}))}()</script>
+<script id=chanpro-home-chat-integration>!function(){const e=e=>document.getElementById(e);let t=!1,n=null;async function a(e,t={}){if(!currentUser?.id)throw new Error("ログインしてください");const n=supabaseClient,a=currentUser.id,o=["admin","developer"].includes(currentUser.role),r=e=>{if(e)throw new Error(e.message||String(e))},s=async e=>{const{data:t,error:o}=await n.from("users").update(e).eq("id",a).select("*").single();return r(o),t&&(currentUser={...currentUser,...t},cache.users.set(a,currentUser)),t};if("user-update"===e){const e={};void 0!==t.newUsername&&(e.username=String(t.newUsername).trim()),void 0!==t.newPassword&&(e.password_hash=await hashPassword(String(t.newPassword)));for(const n of["icon_url","cover_url","profile","program_urls","profile_music"])void 0!==t[n]&&(e[n]=t[n]);if(void 0!==t.settings&&(e.settings={...currentUser.settings||{},...t.settings}),!Object.keys(e).length)throw new Error("変更内容がありません");const n=await s(e);return void 0!==t.newPassword&&(currentRawPassword=String(t.newPassword),currentPasswordHash=e.password_hash),{ok:!0,user:n,message:"アカウント情報を更新しました"}}if("user-settings"===e){const e=["home_chat_enabled","manual_chat_join","default_chat_room","chat_sound_enabled","chat_theme"],n={};for(const a of e)Object.prototype.hasOwnProperty.call(t.settings||{},a)&&(n[a]=t.settings[a]);return{ok:!0,settings:(await s({settings:{...currentUser.settings||{},...n}})).settings}}if("post-pin"===e){const{data:e,error:o}=await n.from("posts").select("id,user_id,is_pinned").eq("id",t.postId).maybeSingle();if(r(o),!e)throw new Error("投稿が見つかりません");if(e.user_id!==a)throw new Error("自分の投稿だけ固定できます");if(t.pinned){const{error:e}=await n.from("posts").update({is_pinned:!1}).eq("user_id",a).eq("is_pinned",!0);r(e)}const{error:s}=await n.from("posts").update({is_pinned:!!t.pinned}).eq("id",t.postId).eq("user_id",a);return r(s),{ok:!0,pinned:!!t.pinned}}if("post-delete"===e){const e=t.postId,{data:s,error:i}=await n.from("posts").select("id,user_id").eq("id",e).maybeSingle();if(r(i),!s)throw new Error("投稿が見つかりません");if(s.user_id!==a&&!o)throw new Error("削除権限がありません");const{error:c}=await n.from("posts").delete().eq("id",e);return r(c),{ok:!0,message:"投稿を削除しました"}}if("post-view"===e){const{data:e,error:o}=await n.from("posts").select("id,user_id,views").eq("id",t.postId).maybeSingle();if(r(o),!e)throw new Error("投稿が見つかりません");if(e.user_id===a)return{ok:!0,views:Number(e.views||0)};const s=Number(e.views||0)+1,{error:i}=await n.from("posts").update({views:s}).eq("id",e.id);return r(i),{ok:!0,views:s}}if("dm-list"===e){const e=()=>{let e=n.from("messages").select("id,sender_id,receiver_id,content,created_at");return t.withUserId?e.or(`and(sender_id.eq.${a},receiver_id.eq.${t.withUserId}),and(sender_id.eq.${t.withUserId},receiver_id.eq.${a})`).order("created_at",{ascending:!0}):e.or(`sender_id.eq.${a},receiver_id.eq.${a}`).order("created_at",{ascending:!1})},o=[];for(let t=0;;t+=1e3){const{data:n,error:a}=await e().range(t,t+999);if(r(a),n?.length&&o.push(...n),!n||n.length<1e3)break}return{ok:!0,messages:o}}if("dm-send"===e){const e=String(t.content||"").trim();if(!t.recipientId||!e)throw new Error("宛先とメッセージを入力してください");const{data:o,error:s}=await n.from("messages").insert({sender_id:a,receiver_id:t.recipientId,content:e}).select("id,sender_id,receiver_id,content,created_at").single();return r(s),{ok:!0,message:o}}if("account-delete"===e){const{error:e}=await n.from("users").delete().eq("id",a);return r(e),currentUser=null,currentRawPassword="",safeRemove("chanpro_post_user"),location.reload(),{ok:!0,message:"アカウントを削除しました"}}if("admin-user-update"===e){if(!o)throw new Error("管理者権限が必要です");const e=t.targetUserId;if(!e)throw new Error("対象ユーザーが必要です");if(t.deleteAccount){const{error:t}=await n.from("users").delete().eq("id",e);return r(t),{ok:!0,message:"ユーザーを削除しました"}}const a={};void 0!==t.role&&(a.role=t.role),void 0!==t.verified&&(a.verified=!!t.verified),void 0!==t.banUntil&&(a.ban_until=t.banUntil);const{data:s,error:i}=await n.from("users").update(a).eq("id",e).select("*").maybeSingle();return r(i),{ok:!0,user:s}}if("ban"===e){if(!o)throw new Error("BAN権限がありません");const e=t.targetUserId;if(!e)throw new Error("対象ユーザーが必要です");const s=await getDeviceFingerprint(),i=(new Date).toLocaleDateString("en-CA",{timeZone:"Asia/Tokyo"}),{data:c,error:d}=await n.from("chat_device_bans").select("id").eq("actor_user_id",a).eq("target_user_id",e).eq("actor_device_hash",t.deviceHash||s.hash).eq("ban_date",i).limit(1);if(!d&&c?.length)throw new Error("この端末からこのユーザーへの本日のBANは実行済みです");const{data:u,error:l}=await n.from("users").select("ban_count,points").eq("id",e).single();r(l);const h=new Date(Date.now()+6e4*Math.max(1,Number(t.banMinutes)||5)).toISOString(),{data:m,error:p}=await n.from("user_devices").select("device_hash").eq("user_id",e);r(p);const w=[...new Set((m||[]).map((e=>e.device_hash)).filter(Boolean))],{error:g}=await n.from("users").update({ban_count:Number(u.ban_count||0)+1,ban_until:h,points:Math.max(0,Number(u.points||0)-100)}).eq("id",e);if(r(g),w.length){const{error:o}=await n.from("chat_device_bans").insert(w.map((n=>({actor_user_id:a,target_user_id:e,actor_device_hash:t.deviceHash||s.hash,target_device_hash:n,ban_date:i,ban_until:h}))));r(o)}return{ok:!0,banUntil:h}}if("stamp-purchase"===e){const e=Number(t.amount);if(!Number.isFinite(e)||e<1||Number(currentUser.points||0)<e)throw new Error("ポイントが足りないか、購入情報が不正です");const n=Array.isArray(currentUser.stamp_list)?currentUser.stamp_list:[],a=await s({points:Number(currentUser.points||0)-e,stamp_list:[...n,t.stampUrl]});return{ok:!0,points:a.points,stamp_list:a.stamp_list}}if("transfer-points"===e){const e=Number(t.amount);if(!Number.isInteger(e)||e<1||e>1e3||Number(currentUser.points||0)<e||t.targetUserId===a)throw new Error("ポイント送信内容が不正です");const{data:o,error:i}=await n.from("users").select("id,points").eq("id",t.targetUserId).single();r(i),await s({points:Number(currentUser.points||0)-e});const{error:c}=await n.from("users").update({points:Number(o.points||0)+e}).eq("id",o.id);return r(c),{ok:!0,points:Number(currentUser.points||0)}}if("chat-points"===e){const e=Number(t.amount);if(!Number.isInteger(e)||!e||Math.abs(e)>5e3)throw new Error("ポイント数が不正です");const n=Math.max(0,Number(currentUser.points||0)+e);return{ok:!0,points:(await s({points:n})).points}}if("user-login-streak"===e){const e=(new Date).toLocaleDateString("en-CA",{timeZone:"Asia/Tokyo"}),t=currentUser.last_login_date?String(currentUser.last_login_date).slice(0,10):"";if(t===e)return{ok:!0,awarded:!1,streak:Number(currentUser.login_streak||0),points:Number(currentUser.points||0),bonus:0};let n=t?Number(currentUser.login_streak||0)+1:1;const a=5+(n%7==0?10:0);return{ok:!0,awarded:!0,streak:n,points:(await s({login_streak:n,last_login_date:e,points:Number(currentUser.points||0)+a})).points,bonus:a}}if("weekly-points"===e){const e=new Date,t=(()=>{const t=new Date(Date.UTC(e.getFullYear(),e.getMonth(),e.getDate()));t.setUTCDate(t.getUTCDate()+4-(t.getUTCDay()||7));const n=t.getUTCFullYear(),a=new Date(Date.UTC(n,0,1));return`${n}-W${String(Math.ceil(((t-a)/864e5+1)/7)).padStart(2,"0")}`})(),n=currentUser.last_post_week||"",a=n===t?Number(currentUser.consecutive_post_weeks||0):Number(currentUser.consecutive_post_weeks||0)+1,o=n!==t,r=o?30*a:0;return{ok:!0,awarded:o,points:(await s({points:Number(currentUser.points||0)+r,consecutive_post_weeks:a,last_post_week:t})).points,streak:a,week:t}}if("report"===e){const e=String(t.message||"").trim();if(!e)throw new Error("報告内容を入力してください");const{error:o}=await n.from("gather_reports").insert({user_id:a,username:currentUser.username,content:e});return r(o),{ok:!0,message:"報告を送信しました"}}if("image-register"===e){const{error:e}=await n.from("chat_image_assets").insert({user_id:a,image_url:t.imageUrl,delete_url:t.deleteUrl||null});return r(e),{ok:!0}}throw new Error("未対応の直接操作です: "+e)}async function o(e){try{const t=await a("user-settings",{settings:e});return currentUser.settings=t.settings||{...currentUser.settings||{},...e},!0}catch(e){return"function"==typeof toast&&toast("設定を保存できませんでした: "+e.message),!1}}function r(){const n=currentUser?.settings||{},a=!1!==n.home_chat_enabled&&!1!==window.__gatherHomeChatEnabled,o=Number(window.__gatherHomeChatWidth||n.home_chat_width||390);t=!a;const r=e("homeChatWidget");r&&(r.classList.toggle("disabled",!a),document.querySelector(".app")?.classList.toggle("gather-chat-off",!a),document.documentElement.style.setProperty("--gather-chat-width",Math.max(240,Math.min(760,o))+"px"),r.style.width=Math.max(240,Math.min(760,o))+"px"),e("accountHomeChatEnabled")&&(e("accountHomeChatEnabled").checked=a),e("accountHomeChatWidth")&&(e("accountHomeChatWidth").value=String(o));try{const t=e("chatPageFrame");t?.contentWindow?.setChatSoundEnabled?.(!1!==n.chat_sound_enabled);const a=t?.contentDocument;a&&(["blue","green","red","dark"].forEach((e=>a.body.classList.remove(e))),n.chat_theme&&"blue"!==n.chat_theme&&a.body.classList.add(n.chat_theme),(()=>{if(!a.getElementById("gather-hide-chat-toolbar")){const e=a.createElement("style");e.id="gather-hide-chat-toolbar",e.textContent='#top,#themeMenu,#accountMenu,#notificationArea,#developerNotificationBox,#developerDMModal{display:none!important;height:0!important;min-height:0!important;padding:0!important;margin:0!important;border:0!important}button[onclick="openAccountMenu()"],button[onclick="openDeveloperDM()"],.theme{display:none!important}',a.head.appendChild(e)}})())}catch(e){}}function s(){if(e("accountSettingsPage"))return;const t=document.querySelector(".main");if(!t)return;const n=document.createElement("section");n.id="accountSettingsPage",n.className="hidden",n.innerHTML='<div class="pageHeader">⚙️ アカウント設定 <button type="button" id="accountSettingsClose" style="float:right">閉じる ✕</button></div><h2>アカウント設定</h2><div class="settingsGroup"><h3>ホームの表示</h3><label><input type="checkbox" id="accountHomeChatEnabled" style="width:auto"> ホームにチャットを表示する（オフにするとチャットから退出）</label><label style="display:block;margin-top:10px"><input type="checkbox" id="accountManualChatJoin" style="width:auto" checked> チャットにログイン時に自動で参加しない（「チャットルームに入る」を押すまで接続しない）</label><label style="display:block;margin-top:12px">最初に入るチャットルーム（デフォルトroom）<input id="accountDefaultChatRoom" type="text" maxlength="80" placeholder="例：room" autocomplete="off"></label><p style="color:#536471;font-size:13px;line-height:1.6">設定した部屋名をチャット画面に入力します。接続はチャット画面の「チャットルームに入る」操作で行います。</p></div><div class="settingsGroup"><h3>チャット通知</h3><label><input type="checkbox" id="accountChatSound" style="width:auto"> チャット受信音を鳴らす</label></div><div class="settingsGroup"><h3>テーマカラー</h3><label>チャットのテーマ</label><select id="accountChatTheme"><option value="blue">青</option><option value="green">緑</option><option value="red">赤</option><option value="dark">ダーク</option></select></div><div class="settingsGroup"><h3>アカウント</h3><label>現在のユーザー名（ログイン情報を自動入力）</label><input id="accountAuthUsername" autocomplete="username" placeholder="ログイン中のユーザー名"><label>現在のパスワード（ログイン情報を自動入力）</label><input id="accountCurrentPassword" type="password" autocomplete="current-password" placeholder="ログイン中のパスワード"><label>新しいユーザー名</label><input id="accountNewUsername" maxlength="32" placeholder="新しいユーザー名"><div class="settingsRow"><button class="primary" id="accountUsernameSave">ユーザー名を変更</button></div><label>新しいパスワード</label><input id="accountNewPassword" type="password" autocomplete="new-password" placeholder="新しいパスワード"><div class="settingsRow"><button class="primary" id="accountPasswordSave">パスワードを変更</button></div></div><div class="settingsGroup"><h3>報告</h3><label>報告内容</label><textarea id="accountReportText" rows="4" maxlength="2000" placeholder="不具合・迷惑行為などを報告"></textarea><div class="settingsRow"><button id="accountReportSend">報告を送信</button></div></div><div class="settingsGroup"><h3>アカウント削除</h3><p style="color:#b91c1c;font-size:13px">削除するとアカウントを復元できません。</p><button class="danger" id="accountDeleteButton">アカウントを削除</button></div><div id="accountSettingsStatus" role="status"></div>',t.appendChild(n),e("accountSettingsClose").onclick=e=>{e.preventDefault(),e.stopPropagation(),c()},e("accountHomeChatEnabled").onchange=()=>{window.__gatherHomeChatEnabled=e("accountHomeChatEnabled").checked,r(),o({home_chat_enabled:e("accountHomeChatEnabled").checked})},e("accountManualChatJoin").onchange=()=>{window.__gatherManualChatJoin=e("accountManualChatJoin").checked;try{e("chatPageFrame").contentWindow.__gatherManualChatJoin=window.__gatherManualChatJoin}catch(e){}o({manual_chat_join:window.__gatherManualChatJoin})},e("accountDefaultChatRoom").onchange=()=>{const t=e("accountDefaultChatRoom").value.trim().slice(0,80);o({default_chat_room:t});try{const n=e("chatPageFrame")?.contentDocument?.getElementById("setRoom");n&&(n.value=t)}catch(e){}},e("accountChatSound").checked=!1!==window.chanproChatSoundEnabled,e("accountChatSound").onchange=()=>{window.chanproChatSoundEnabled=e("accountChatSound").checked;try{e("chatPageFrame").contentWindow.setChatSoundEnabled?.(window.chanproChatSoundEnabled)}catch(e){}o({chat_sound_enabled:window.chanproChatSoundEnabled})},e("accountChatTheme").onchange=()=>{try{const t=e("chatPageFrame").contentDocument;["blue","green","red","dark"].forEach((e=>t.body.classList.remove(e))),"blue"!==e("accountChatTheme").value&&t.body.classList.add(e("accountChatTheme").value)}catch(e){}o({chat_theme:e("accountChatTheme").value})},e("accountUsernameSave").onclick=()=>d("username-change",{newUsername:e("accountNewUsername").value.trim()}),e("accountPasswordSave").onclick=()=>d("password-change",{newPassword:e("accountNewPassword").value}),e("accountReportSend").onclick=async()=>{const t=e("accountReportText"),n=e("accountReportSend"),o=e("accountSettingsStatus"),r=String(t?.value||"").trim();if(!currentUser?.id)return o.textContent="先にログインしてください。";if(!r)return o.textContent="報告内容を入力してください。";if(r.length>2e3)return o.textContent="報告内容は2000文字以内にしてください。";n.disabled=!0,n.textContent="送信中…",o.textContent="ログイン中のアカウントで報告を送信しています…";try{const e=await a("report",{message:r});o.textContent=e?.message||"報告を送信しました。",t.value=""}catch(e){console.error("報告送信エラー:",e),o.textContent="送信できませんでした: "+(e?.message||String(e))}finally{n.disabled=!1,n.textContent="報告を送信"}},e("accountDeleteButton").onclick=async()=>{await htmlConfirm("アカウントを削除しますか？この操作は取り消せません。")&&await d("account-delete",{})}}function i(){s();const t=document.querySelector(".main");if(!t)return;[...t.children].forEach((e=>{"accountSettingsPage"===e.id?e.classList.remove("hidden"):e.classList.add("hidden")})),e("accountAuthUsername").value=currentUser?.username||window.getChanProSession?.()?.username||"",e("accountCurrentPassword").value=currentRawPassword||"";const n=currentUser?.settings||{};e("accountHomeChatEnabled").checked=!1!==n.home_chat_enabled,e("accountManualChatJoin").checked=!1!==n.manual_chat_join,window.__gatherManualChatJoin=!1!==n.manual_chat_join,e("accountDefaultChatRoom").value=String(n.default_chat_room||""),e("accountChatSound").checked=!1!==n.chat_sound_enabled,e("accountChatTheme").value=n.chat_theme||"blue"}function c(){const t=e("accountSettingsPage");t&&(t.classList.add("hidden"),[...document.querySelector(".main").children].forEach((e=>{"accountSettingsPage"!==e.id&&e.classList.remove("hidden")})))}async function d(t,n){const o=e("accountSettingsStatus"),r=window.getChanProSession?.(),s=e("accountAuthUsername")?.value.trim()||r?.username||"",i=e("accountCurrentPassword")?.value||"";if(s&&i)if("report"!==t||n.message)if("username-change"!==t||n.newUsername)if("password-change"!==t||n.newPassword&&!(n.newPassword.length<8)){o.textContent="処理中…";try{const r="username-change"===t||"password-change"===t?"user-update":t,c=await a(r,{...n,username:s,password:i});o.textContent=c.message||"完了しました。","username-change"===t&&(currentUser&&(currentUser.username=n.newUsername),e("accountAuthUsername").value=n.newUsername,e("accountNewUsername").value=""),"password-change"===t&&(currentRawPassword=n.newPassword,currentPasswordHash=await hashPassword(n.newPassword),e("accountCurrentPassword").value="",e("accountNewPassword").value=""),"report"===t&&(e("accountReportText").value=""),"account-delete"===t&&(safeRemove("chanpro_post_user"),currentUser=null,currentRawPassword="",location.reload())}catch(e){o.textContent="失敗: "+e.message+"\nSupabaseの権限・RLS設定を確認してください。"}}else o.textContent="新しいパスワードは8文字以上にしてください。";else o.textContent="新しいユーザー名を入力してください。";else o.textContent="報告内容を入力してください。";else o.textContent="この操作にはユーザー名と現在のパスワードが必要です。"}function u(t){const n=document.querySelector(".app");n?.classList.remove("chat-fullscreen"),n&&matchMedia("(max-width:760px)").matches?n.classList.toggle("chat-mobile-open",!!t):n?.classList.remove("chat-mobile-open");const a=e("homeChatWidget");a&&(t?(a.classList.remove("disabled"),a.style.display="flex"):r());const o=e("chatPage");o&&o.classList.add("hidden");try{const t=e("chatPageFrame");if(t?.contentWindow){t.contentWindow.__gatherManualChatJoin=window.__gatherManualChatJoin,t.contentWindow.syncChanProSession?.();const e=currentUser?.settings?.default_chat_room||"";if(e){const n=t.contentDocument?.getElementById("setRoom");n&&!n.value.trim()&&(n.value=e)}}}catch(e){}}function l(){document.querySelectorAll("[data-post-id],.postCard,.post-card,.postItem,.post").forEach((e=>{if(e.dataset.chanproQuoteAdded)return;const t=e.dataset.postId||e.getAttribute("data-id");if(!t||!e.querySelector(".postText,.postTextContent,.content"))return;e.dataset.chanproQuoteAdded="1";const a=document.createElement("button");a.type="button",a.textContent="引用",a.style.cssText="margin:6px 0;border:1px solid #cfd9de;border-radius:18px;background:#fff;color:#536471;padding:5px 10px;font-size:12px",a.addEventListener("click",(e=>{e.preventDefault(),e.stopPropagation(),n={type:"post",data:{id:t}},window.quotePostToChat(t)})),e.appendChild(a)}))}window.gatherSecureApi=a,window.gatherBanUser=async function(e,t){return a("ban",{targetUserId:e,deviceHash:await getDeviceHash(),banMinutes:t})},window.addEventListener("message",(async e=>{if("chanpro-open-profile"===e.data?.type&&e.data.username)try{const{data:t}=await window.supabaseClient.from("users").select("id").eq("username",e.data.username).maybeSingle();if(t?.id){c();const e=[...document.querySelectorAll(".nav button")].find((e=>/プロフィール/.test(e.textContent)));e&&e.click(),setTimeout((()=>window.showUserProfile?.(t.id)),100)}}catch(e){console.warn(e)}"chanpro-quote-chat-message"===e.data?.type&&(n={type:"chat",data:e.data.message},openQuoteChooser())})),window.openQuoteChooser=function(){let t=e("chanproQuoteChooser");t||(t=document.createElement("div"),t.id="chanproQuoteChooser",t.innerHTML='<div><h3>引用先を選択</h3><p>この内容をどこに引用しますか？</p><button class="primary" id="quoteToChat">💬 チャットに引用</button><button id="quoteToPost">📝 ポストに引用</button><button id="quoteCancel">キャンセル</button></div>',document.body.appendChild(t),e("quoteCancel").onclick=()=>t.classList.remove("open"),e("quoteToChat").onclick=()=>{t.classList.remove("open"),"post"===n?.type?(u(!1),e("homeChatWidget")?.classList.remove("disabled"),e("chatPageFrame")?.contentWindow?.insertPostQuote?.(n.data)):"chat"===n?.type&&e("chatPageFrame")?.contentWindow?.insertChatQuote?.(n.data)},e("quoteToPost").onclick=()=>{t.classList.remove("open"),function(e){if(c(),!e)return;const t=e.data||e,n=String(t.content||t.text||"").slice(0,500),a=t.username||t.sender_name||"ユーザー",o=t.url||"https://chanpro.jp/00-program-share?log="+encodeURIComponent(t.id||"");let r=document.querySelector('#quickPostText,#modalPostText,#postContent,#postText,#content,[name="content"],.composer textarea');if(!r){const e=document.querySelector("#homePage");e&&e.classList.remove("hidden"),r=document.querySelector(".composer textarea")}r&&(r.value=(r.value?r.value+"\n\n":"")+"【引用】"+a+"\n"+n+"\n"+o+"\n",r.dispatchEvent(new Event("input",{bubbles:!0})),r.focus(),"function"==typeof toast&&toast("引用をポストの入力欄に追加しました"))}(n)}),t.classList.add("open")},window.quotePostToChat=async function(a){try{const{data:o,error:r}=await window.supabaseClient.from("posts").select("id,user_id,content,created_at").eq("id",a).maybeSingle();if(r||!o)throw r||new Error("ポストが見つかりません");const{data:s}=await window.supabaseClient.from("users").select("username").eq("id",o.user_id).maybeSingle();u(!1),e("homeChatWidget")?.classList.remove("disabled"),t=!1,n={type:"post",data:{...o,username:s?.username||"ユーザー",url:location.origin+"/00-program-share?log="+encodeURIComponent(o.id)}},openQuoteChooser()}catch(e){console.error(e),"function"==typeof toast&&toast("ポスト引用に失敗しました")}};const h=window.showPage;"function"==typeof h&&(window.showPage=async function(e,...t){return"chat"===e?(u(!0),await h.call(this,e,...t)):("home"===e&&(c(),u(!1)),await h.call(this,e,...t))}),document.addEventListener("DOMContentLoaded",(()=>{(function(){const t=document.querySelector(".nav");if(t&&(t.querySelectorAll("button").forEach((e=>{/チャット/.test(e.textContent||"")&&e.remove()})),!e("accountSettingsNav"))){const e=document.createElement("button");e.id="accountSettingsNav",e.textContent="⚙️ アカウント設定",e.onclick=e=>{e.preventDefault(),e.stopPropagation(),i()},e.dataset.settingsNav="1",t.appendChild(e)}})(),function(){const t=document.querySelector(".app");if(!e("homeChatWidget")){const e=document.createElement("section");e.id="homeChatWidget",e.innerHTML='<div id="homeChatResizeHandle" role="separator" aria-label="チャット幅を変更" title="ドラッグしてチャット幅を変更"></div><div id="homeChatHead"></div><div id="homeChatSlot"></div>';const n=document.querySelector(".main");n&&n.parentElement===t?n.insertAdjacentElement("afterend",e):t?.appendChild(e)}let n=e("chatPageFrame");n&&n.parentElement!==e("homeChatSlot")&&e("homeChatSlot").appendChild(n),document.querySelector(".app")?.classList.remove("chat-fullscreen"),window.__gatherManualChatJoin=!1!==(currentUser?.settings||{}).manual_chat_join,r(),function(){const t=e("homeChatResizeHandle");if(!t||t.dataset.ready)return;t.dataset.ready="1";let n=!1,a=0,r=390;const s=t=>{const n=(e=>Math.max(240,Math.min(760,e)))(t);window.__gatherHomeChatWidth=n,document.documentElement.style.setProperty("--gather-chat-width",n+"px");const a=e("homeChatWidget");a&&(a.style.width=n+"px")};t.addEventListener("pointerdown",(e=>{matchMedia("(max-width:760px)").matches||(n=!0,a=e.clientX,r=Number(window.__gatherHomeChatWidth||currentUser?.settings?.home_chat_width||390),t.classList.add("dragging"),t.setPointerCapture?.(e.pointerId),e.preventDefault())})),t.addEventListener("pointermove",(e=>{n&&s(r+(a-e.clientX))}));const i=()=>{n&&(n=!1,t.classList.remove("dragging"),o({home_chat_width:Number(window.__gatherHomeChatWidth||390)}))};t.addEventListener("pointerup",i),t.addEventListener("pointercancel",i),window.addEventListener("resize",(()=>{const t=e("homeChatWidget");t&&!document.querySelector(".app")?.classList.contains("chat-fullscreen")&&(t.style.width=(window.__gatherHomeChatWidth||390)+"px")}))}()}(),s(),l(),(()=>{let e=!1;new MutationObserver((t=>{let n=!1;for(const e of t){for(const t of e.addedNodes||[])if(1===t.nodeType&&(t.matches?.("[data-post-id],.postCard,.post-card,.postItem,.post")||t.querySelector?.("[data-post-id],.postCard,.post-card,.postItem,.post"))){n=!0;break}if(n)break}n&&!e&&(e=!0,requestAnimationFrame((()=>{e=!1,l()})))})).observe(document.body,{childList:!0,subtree:!0})})();const t=window.login;"function"==typeof t&&(window.login=async function(...n){const a=await t.apply(this,n);return setTimeout((()=>{try{const t=currentUser||{},n=t.id||window.getChanProSession?.()?.id;n&&window.posthog?.identify&&posthog.identify(String(n),{username:t.username||window.getChanProSession?.()?.username||""}),window.__gatherManualChatJoin=!1!==(t.settings||{}).manual_chat_join,e("chatPageFrame")?.contentWindow&&(e("chatPageFrame").contentWindow.__gatherManualChatJoin=window.__gatherManualChatJoin,e("chatPageFrame").contentWindow.syncChanProSession?.())}catch(e){}}),250),a}),setTimeout((()=>{try{window.__gatherManualChatJoin=!1!==(currentUser?.settings||{}).manual_chat_join,e("chatPageFrame")?.contentWindow&&(e("chatPageFrame").contentWindow.__gatherManualChatJoin=window.__gatherManualChatJoin,e("chatPageFrame").contentWindow.syncChanProSession?.())}catch(e){}}),500)}))}()</script>
 <script id=chanpro-final-chat-fixes>!function(){function e(){try{const e=window.getChanProSession?.()||{},t=window.currentUser||{},n=t.id||e.id,o=t.username||e.username||"";n&&window.posthog?.identify&&window.posthog.identify(String(n),{username:o});const a=t.settings||{};void 0===window.__gatherManualChatJoin&&(window.__gatherManualChatJoin=!1!==a.manual_chat_join);const d=document.getElementById("chatPageFrame");d?.contentWindow&&(d.contentWindow.__gatherManualChatJoin=window.__gatherManualChatJoin,d.contentWindow.syncChanProSession?.())}catch(e){}}window.addEventListener("message",(t=>{"chanpro-chat-session-ready"===t.data?.type&&e()})),document.addEventListener("DOMContentLoaded",(()=>{const t=document.querySelector(".app"),n=document.getElementById("chatPageFrame"),o=document.getElementById("homeChatSlot");t&&n&&o&&n.parentElement!==o&&o.appendChild(n),document.getElementById("homeChatResizeHandle")?.addEventListener("dblclick",(()=>{window.__gatherHomeChatWidth=390,document.documentElement.style.setProperty("--gather-chat-width","390px");const e=document.getElementById("homeChatWidget");e&&(e.style.width="390px")})),e()}));const t=window.showPage;"function"==typeof t&&(window.showPage=function(e,...n){if(document.querySelector(".app")?.classList.remove("chat-fullscreen"),"chat"===e){const o=t.call(this,e,...n);return setTimeout((()=>{document.getElementById("chatPage")?.classList.add("hidden"),document.getElementById("homeChatWidget")?.classList.remove("disabled"),document.getElementById("chatPageFrame")?.contentWindow?.syncChanProSession?.()}),0),o}return"home"===e&&document.getElementById("chatPage")?.classList.add("hidden"),t.call(this,e,...n)})}()</script>
 <style id=chanpro-final-layout-account-fixes>:root{--gather-chat-width:390px}body,html{overflow-x:hidden!important;max-width:100%!important}.app{grid-template-columns:220px minmax(300px,1fr) 270px var(--gather-chat-width,390px)!important;max-width:100%!important;width:100%!important;align-items:start!important}#homeChatWidget{position:fixed!important;top:0!important;right:0!important;bottom:0!important;left:auto!important;width:var(--gather-chat-width,390px)!important;height:100dvh!important;min-height:0!important;z-index:100!important;align-self:auto!important;overflow:visible!important}#homeChatSlot{height:100dvh!important;overflow:hidden!important}#homeChatSlot #chatPageFrame{width:100%!important;height:100dvh!important;min-height:0!important;border:0!important;display:block!important}#homeChatResizeHandle{position:absolute!important;left:-18px!important;top:0!important;bottom:0!important;width:36px!important;z-index:120!important;cursor:col-resize!important;touch-action:none!important;background:0 0!important;display:flex!important;align-items:center!important;justify-content:center!important}#homeChatResizeHandle:after{content:"";display:block;width:5px!important;height:100px!important;border-radius:5px!important;background:#aab8c2!important;box-shadow:0 0 0 1px rgba(255,255,255,.85);transition:background .15s,transform .15s}#homeChatResizeHandle.dragging:after,#homeChatResizeHandle:hover:after{background:#1d9bf0!important;transform:scaleX(1.5)!important}.app.chat-fullscreen{display:grid!important;grid-template-columns:220px minmax(300px,1fr) 270px var(--gather-chat-width,390px)!important}.app.chat-fullscreen .main,.app.chat-fullscreen .rightbar,.app.chat-fullscreen .sidebar{display:block!important}.app.chat-fullscreen #homeChatWidget{position:fixed!important;inset:0 0 0 auto!important;width:var(--gather-chat-width,390px)!important;height:100dvh!important;z-index:100!important}#accountSettingsPage{position:fixed!important;inset:18px auto 78px 50%!important;transform:translateX(-50%)!important;width:min(720px,calc(100vw - 32px))!important;max-height:calc(100dvh - 100px)!important;overflow:auto!important;z-index:850!important;background:#fff!important;border:1px solid #e1e8ed!important;border-radius:18px!important;box-shadow:0 18px 70px rgba(15,23,42,.22)!important;padding:22px!important;color:#0f1419!important}#accountSettingsPage.hidden{display:none!important}#accountSettingsPage h2{font-size:24px;margin:8px 0 18px}#accountSettingsPage .pageHeader{position:sticky;top:-22px;margin:-22px -22px 18px;padding:17px 22px!important;z-index:2;border-radius:18px 18px 0 0!important}#accountSettingsPage .settingsGroup{background:#f8fafc!important;border:1px solid #e2e8f0!important;border-radius:14px!important;padding:16px!important;margin:14px 0!important;line-height:1.6!important}#accountSettingsPage .settingsGroup h3{font-size:16px;margin:0 0 12px!important;color:#1e293b!important}#accountSettingsPage label{display:block!important;margin:10px 0!important;font-size:14px!important;color:#334155!important}#accountSettingsPage input:not([type=checkbox]),#accountSettingsPage select,#accountSettingsPage textarea{display:block!important;width:100%!important;box-sizing:border-box!important;border:1px solid #cbd5e1!important;border-radius:10px!important;padding:11px 12px!important;background:#fff!important;color:#0f172a!important;margin:7px 0!important;min-height:42px}#accountSettingsPage input[type=checkbox]{width:18px!important;height:18px!important;vertical-align:middle!important;margin-right:8px!important;accent-color:#1d9bf0}#accountSettingsPage button{border-radius:10px!important;padding:10px 15px!important}#accountSettingsStatus{white-space:pre-wrap;margin-top:12px;color:#475569}@media(max-width:1200px){.app{grid-template-columns:80px minmax(300px,1fr) var(--gather-chat-width,390px)!important}.sidebar{grid-column:1!important;padding:12px 6px!important}.main{grid-column:2!important}.rightbar{display:none!important}}@media(max-width:760px){#homeChatWidget{position:fixed!important;display:none!important;inset:0!important;width:100vw!important;height:calc(100dvh - 60px)!important;bottom:60px!important;z-index:95!important}#homeChatResizeHandle{display:none!important}.app.chat-fullscreen #homeChatWidget{display:flex!important;position:fixed!important;inset:0 0 60px!important;width:100vw!important;height:calc(100dvh - 60px)!important}.app.chat-fullscreen .sidebar{display:block!important}.app.chat-fullscreen .rightbar{display:none!important}#accountSettingsPage{inset:10px 8px 72px!important;transform:none!important;width:auto!important;max-height:calc(100dvh - 82px)!important;padding:15px!important}#accountSettingsPage .pageHeader{top:-15px;margin:-15px -15px 14px;padding:14px 15px!important}.app.chat-mobile-open #homeChatWidget{display:flex!important}.app.chat-mobile-open .main{display:none!important}.app.chat-mobile-open .rightbar{display:none!important}}</style>
 <style id=chanpro-final-recovery-layout>:root{--gather-chat-width:390px}body,html{width:100%;max-width:100%;overflow-x:hidden!important}.app{display:grid!important;grid-template-columns:220px minmax(320px,1fr) minmax(240px,280px) var(--gather-chat-width,390px)!important;width:100%!important;max-width:100%!important;gap:0!important;overflow-x:clip!important;align-items:start!important;justify-content:stretch!important}.app>.sidebar{grid-column:1!important;grid-row:1!important;min-width:0!important}.app>.main{grid-column:2!important;grid-row:1!important;min-width:0!important;width:100%!important;max-width:none!important;overflow-x:hidden!important}.app>.rightbar{grid-column:3!important;grid-row:1!important;display:block!important;min-width:0!important;width:100%!important;max-width:none!important;overflow-wrap:anywhere!important}#homeChatWidget{position:fixed!important;left:auto!important;right:0!important;top:0!important;bottom:0!important;width:var(--gather-chat-width,390px)!important;max-width:none!important;min-width:240px!important;height:100dvh!important;z-index:120!important;display:flex;flex-direction:column;overflow:hidden!important;background:#fff!important;border-left:1px solid #dbe3e8!important}#homeChatWidget.disabled{display:none!important}#homeChatSlot{flex:1 1 auto!important;min-height:0!important;height:calc(100dvh - 4px)!important;overflow:hidden!important}#chatPageFrameWrap #chatPageFrame,#homeChatSlot #chatPageFrame{display:block!important;width:100%!important;height:100dvh!important;min-height:0!important;border:0!important}#homeChatResizeHandle{left:-18px!important;width:36px!important;touch-action:none!important;cursor:col-resize!important;z-index:130!important}#homeChatResizeHandle:before{content:"";position:absolute;inset:0 9px;background:0 0}#homeChatResizeHandle:after{width:5px!important;height:100px!important}#accountSettingsPage{position:relative!important;inset:auto!important;left:auto!important;top:auto!important;transform:none!important;width:100%!important;max-width:none!important;max-height:none!important;overflow:visible!important;z-index:auto!important;background:#fff!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:20px!important;color:#0f1419!important;margin:0!important}#accountSettingsPage.hidden{display:none!important}#accountSettingsPage .pageHeader{position:sticky!important;top:0!important;margin:-20px -20px 18px!important;padding:16px 20px!important;border-radius:0!important}#accountSettingsPage .settingsGroup{width:100%!important;max-width:100%!important;box-sizing:border-box!important;background:#f8fafc!important;border:1px solid #e2e8f0!important;border-radius:14px!important;padding:16px!important;margin:14px 0!important}#accountSettingsPage label{display:block!important;line-height:1.6!important}#accountSettingsPage input:not([type=checkbox]),#accountSettingsPage select,#accountSettingsPage textarea{width:100%!important;max-width:100%!important;box-sizing:border-box!important}.app.gather-chat-off{grid-template-columns:220px minmax(0,650px) minmax(280px,320px)!important;max-width:1260px!important;justify-content:start!important;margin-left:auto!important;margin-right:auto!important}.app.gather-chat-off>.main{grid-column:2!important;max-width:650px!important}.app.gather-chat-off>.rightbar{grid-column:3!important;display:block!important;width:100%!important;max-width:320px!important}.app.gather-chat-off #homeChatWidget{display:none!important}#chatPage{min-width:0!important;max-width:none!important;overflow:visible!important}#chatPageFrameWrap{width:100%!important;max-width:none!important;height:calc(100dvh - 60px)!important;min-height:0!important;overflow:hidden!important;background:#fff!important}#chatPageFrameWrap #chatPageFrame{height:calc(100dvh - 60px)!important}.app.chanpro-chat-wide-open{grid-template-columns:220px minmax(320px,1fr) minmax(240px,280px)!important}.app.chanpro-chat-wide-open>.sidebar{display:block!important}.app.chanpro-chat-wide-open>.rightbar{display:block!important}.app.chanpro-chat-wide-open #homeChatWidget{display:none!important}@media(max-width:1200px) and (min-width:761px){.app{grid-template-columns:72px minmax(260px,1fr) var(--gather-chat-width,390px)!important}.app>.sidebar{grid-column:1!important}.app>.main{grid-column:2!important}.app>.rightbar{display:none!important}.app.gather-chat-off{grid-template-columns:72px minmax(0,650px)!important}.app.gather-chat-off>.main{grid-column:2!important}.app.gather-chat-off>.rightbar{display:none!important}}@media(max-width:760px){.app{display:block!important}.app>.sidebar{display:block!important}.app>.main{display:block!important;width:100%!important;max-width:100%!important}.app>.rightbar{display:none!important}#homeChatWidget{display:none!important;inset:0 0 60px 0!important;width:100vw!important;height:calc(100dvh - 60px)!important;min-width:0!important;max-width:100vw!important;border-left:0!important}.app.chat-mobile-open #homeChatWidget{display:flex!important}.app.chat-mobile-open>.main{display:none!important}.app.chat-mobile-open>.rightbar{display:none!important}.app.chanpro-chat-wide-open>.sidebar{display:block!important}.app.chanpro-chat-wide-open>.main{display:none!important}.app.chanpro-chat-wide-open>.rightbar{display:none!important}#chatPageFrameWrap,#chatPageFrameWrap #chatPageFrame{height:calc(100dvh - 60px)!important}#accountSettingsPage{padding:14px!important}#accountSettingsPage .pageHeader{margin:-14px -14px 14px!important;padding:14px!important}}</style>
@@ -699,355 +700,631 @@ body.gather-fullscreen-chat #gatherParticipantsButton{display:none!important}
 <script id=gather-postmessage-parent-bridge-20261019>(()=>{const e=()=>document.getElementById("chatPageFrame");function t(){try{e()?.contentWindow?.postMessage(function(){let e=null;try{e="undefined"!=typeof currentUser?currentUser:window.currentUser||null}catch{}const t={...e?.settings||{}};return{type:"gather-chat-session",session:e?.id?{id:String(e.id),username:String(e.username||""),icon_url:e.icon_url||null,role:e.role||"user"}:null,settings:t,home_chat_enabled:!1!==t.home_chat_enabled,manual_chat_join:!!t.manual_chat_join,default_chat_room:String(t.default_chat_room||"room"),chat_sound_enabled:!1!==t.chat_sound_enabled,notification_volume:Number(t.notification_volume??.5)}}(),"*")}catch(e){console.warn("チャットへのセッション通知:",e)}}window.addEventListener("message",(async n=>{const o=n.data||{};if("chanpro-chat-session-ready"===o.type)return void t();if("gather-chat-rpc"!==o.type)return;let a,r=!0,i="";try{const e=Array.isArray(o.args)?o.args:[];if("gatherSecureApi"===o.method){if("function"!=typeof window.gatherSecureApi)throw new Error("secure API が利用できません");a=await window.gatherSecureApi(...e)}else if("gatherBanUser"===o.method){if("function"!=typeof window.gatherBanUser)throw new Error("BAN API が利用できません");a=await window.gatherBanUser(...e)}else if("gatherChatImageUpload"===o.method){if("function"!=typeof window.gatherChatImageUpload)throw new Error("画像アップロード API が利用できません");a=await window.gatherChatImageUpload(...e)}else{if("posthogDeviceBanCheck"!==o.method)throw new Error("未対応のAPIです");if("function"!=typeof window.ChanProShared?.posthogDeviceBanCheck)throw new Error("PostHog確認 API が利用できません");a=await window.ChanProShared.posthogDeviceBanCheck(...e)}}catch(e){r=!1,i=e?.message||String(e)}try{e()?.contentWindow?.postMessage({type:"gather-chat-rpc-result",id:o.id,ok:r,result:a,error:i},"*")}catch(e){console.warn("チャットAPI応答:",e)}})),window.__gatherPostChatSync=t;const n=()=>{t(),setTimeout(t,100),setTimeout(t,500),setTimeout(t,1500)};document.getElementById("chatPageFrame")?.addEventListener("load",n),document.addEventListener("DOMContentLoaded",n),window.addEventListener("load",n);const o=window.afterLogin;if("function"==typeof o&&!o.__gatherPostMessageWrapped){const e=async function(...e){const t=await o.apply(this,e);return n(),t};e.__gatherPostMessageWrapped=!0,window.afterLogin=e}const a=window.login;if("function"==typeof a&&!a.__gatherPostMessageWrapped){const e=async function(...e){const t=await a.apply(this,e);return n(),t};e.__gatherPostMessageWrapped=!0,window.login=e}setInterval((()=>{e()&&"hidden"!==document.visibilityState&&t()}),2e3)})()</script>
 <script id=gather-expose-shared-session-variables>(()=>{try{Object.getOwnPropertyDescriptor(window,"currentUser")||Object.defineProperty(window,"currentUser",{configurable:!0,get(){try{return"undefined"!=typeof currentUser?currentUser:null}catch(r){return null}}}),Object.getOwnPropertyDescriptor(window,"currentPasswordHash")||Object.defineProperty(window,"currentPasswordHash",{configurable:!0,get(){try{return"undefined"!=typeof currentPasswordHash?currentPasswordHash:""}catch(r){return""}}})}catch(r){console.warn("共有変数公開:",r)}})()</script>
 <style id=chanpro-wide-chat-final-fix>#app.chanpro-chat-wide-open>.sidebar{display:none!important}#app.chanpro-chat-wide-open>.main,#app.chanpro-chat-wide-open>.rightbar{display:none!important;visibility:hidden!important;pointer-events:none!important}#app.chanpro-chat-wide-open #chatPage{display:block!important;position:static!important;width:100%!important;max-width:none!important;min-height:0!important;margin:0!important;padding:0!important}#app.chanpro-chat-wide-open #chatPage .pageHeader{display:none!important}#app.chanpro-chat-wide-open #chatPageFrameWrap{display:block!important;position:fixed!important;inset:42px 0 0 0!important;z-index:10010!important;width:100vw!important;height:calc(100dvh - 42px)!important;max-width:none!important;min-width:0!important;min-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important;background:#fff!important;border:0!important}#app.chanpro-chat-wide-open #chatPageFrame{display:block!important;position:absolute!important;inset:0!important;width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;max-width:none!important;border:0!important;margin:0!important;padding:0!important;background:#fff!important}#chanproTopReveal{z-index:10022!important}#chanproTopBar{z-index:10023!important}body:has(#app.chanpro-chat-wide-open) #chanproTopBar{transform:translateY(0)!important}@media(max-width:600px){#app.chanpro-chat-wide-open #chatPageFrameWrap{inset:42px 0 0 0!important;width:100vw!important;height:calc(100dvh - 42px)!important}}</style>
+
+
+
+
+<script id="gather-final-persistent-fullscreen-chat-fix">
+(() => {
+  const byId = id => document.getElementById(id);
+  const isPinned = () => window.__gatherFullscreenChatPinned === true;
+  let queued = false;
+  function apply() {
+    queued = false;
+    const f = byId('chatPageFrame');
+    const notice = byId('homeChatMobileNotice');
+    if (notice) notice.style.setProperty('display', matchMedia('(max-width:760px)').matches && !isPinned() ? 'block' : 'none', 'important');
+    if (!isPinned() || !f) return;
+    const top = matchMedia('(max-width:600px)').matches ? 42 : 44;
+    const css = {position:'fixed',top:top+'px',left:'0',right:'0',bottom:'0',width:'100vw',height:`calc(100dvh - ${top}px)`,minWidth:'0',minHeight:'0',maxWidth:'none',maxHeight:'none',margin:'0',padding:'0',border:'0',display:'block',visibility:'visible',opacity:'1',pointerEvents:'auto',zIndex:'2147483000'};
+    for (const [k,v] of Object.entries(css)) f.style.setProperty(k.replace(/[A-Z]/g,m=>'-'+m.toLowerCase()),v,'important');
+    f.classList.add('gather-chat-fixed-fullscreen');
+    for (const id of ['chanproTopBar','chanproTopReveal']) {
+      const b=byId(id); if(!b) continue;
+      b.classList.add('gather-chat-bar-pinned');
+      b.style.setProperty('position','fixed','important');
+      b.style.setProperty('top','0','important');
+      b.style.setProperty('left','0','important');
+      b.style.setProperty('right','0','important');
+      b.style.setProperty('width','100%','important');
+      b.style.setProperty('z-index','2147483002','important');
+      b.style.setProperty('transform','translateY(0)','important');
+    }
+  }
+  function schedule(){ if(queued)return; queued=true; requestAnimationFrame(apply); }
+  window.addEventListener('resize',schedule,{passive:true});
+  window.addEventListener('orientationchange',schedule,{passive:true});
+  window.addEventListener('load',schedule,{once:true});
+  document.addEventListener('DOMContentLoaded',schedule,{once:true});
+  const f=byId('chatPageFrame'); if(f) f.addEventListener('load',schedule);
+  schedule();
+})();
+</script>
+
 </body>
 </html>
 <script id=chanpro-final-independent-fix-20261018>(()=>{const t=t=>document.getElementById(t),e=()=>{try{return"undefined"!=typeof currentUser?currentUser:window.currentUser}catch{return window.currentUser||null}},a=()=>{const t=e();return t?(t.settings&&"object"==typeof t.settings||(t.settings={}),t.settings):{}},n=()=>!1!==a().home_chat_enabled;let o=Promise.resolve();async function c(t){const n=e();if(!n?.id)return;const c={...a(),...t};n.settings=c,window.__gatherHomeChatEnabled=!1!==c.home_chat_enabled,window.cache?.users?.set&&window.cache.users.set(n.id,n),o=o.then((async()=>{const{error:t}=await supabaseClient.from("users").update({settings:c}).eq("id",n.id);if(t)throw t}));try{await o}catch(t){console.error("設定保存エラー",t),"function"==typeof toast&&toast("設定を保存できませんでした。Supabaseの権限を確認してください.")}if(Object.prototype.hasOwnProperty.call(t,"home_chat_enabled")&&!t.home_chat_enabled)try{const t=document.getElementById("chatPageFrame"),e=t?.contentWindow;if(e){e.__gatherChatDisabled=!0,"function"==typeof e.__chanproForceLeave&&e.__chanproForceLeave(),e.__chanproChatStartLock=!1,e.__chanproAutoStartRequested=!1,e.__gatherManualChatJoin=!0;const a=t.contentDocument?.getElementById("sendButton");a&&(a.disabled=!0)}}catch(t){console.warn("ホームチャット非表示時の退出処理:",t)}else if(Object.prototype.hasOwnProperty.call(t,"home_chat_enabled")&&t.home_chat_enabled)try{const t=document.getElementById("chatPageFrame")?.contentWindow;t&&(t.__gatherChatDisabled=!1,t.__gatherManualChatJoin=!!a().manual_chat_join,t.__gatherManualChatJoin||"function"!=typeof t.startChat||Promise.resolve().then((()=>t.startChat())).catch((t=>console.warn("チャット再接続:",t))))}catch(t){}i()}function i(){const e=t("app"),a=t("homeChatWidget");if(!e||!a)return;const o=e.classList.contains("chanpro-chat-wide-open");e.classList.toggle("gather-chat-off",!n()&&!o),a.classList.toggle("disabled",!n()&&!o),a.style.display=n()&&!o?"flex":"none";const c=t("accountHomeChatEnabled");c&&(c.checked=n())}function s(){const e=t("accountSettingsPage"),n=document.querySelector(".main");if(!e||!n)return;"function"==typeof hidePages?hidePages():[...n.children].forEach((t=>t.classList.add("hidden"))),e.classList.remove("hidden"),e.style.display="block";const o=a();t("accountHomeChatEnabled")&&(t("accountHomeChatEnabled").checked=!1!==o.home_chat_enabled),t("accountManualChatJoin")&&(t("accountManualChatJoin").checked=!!o.manual_chat_join),t("accountDefaultChatRoom")&&(t("accountDefaultChatRoom").value=o.default_chat_room||""),t("accountChatSound")&&(t("accountChatSound").checked=!1!==o.chat_sound_enabled),t("accountSoundVolume")&&(t("accountSoundVolume").value=Number(o.notification_volume??.5)),t("accountSoundVolumeValue")&&(t("accountSoundVolumeValue").textContent=Math.round(100*Number(o.notification_volume??.5))+"%"),t("accountChatTheme")&&(t("accountChatTheme").value=o.chat_theme||"blue"),i()}function d(){const e=t("app"),n=t("chatPage"),o=t("chatPageFrameWrap"),c=t("chatPageFrame");if(!e||!n||!c)return;e.classList.add("chanpro-chat-wide-open"),e.classList.remove("chat-fullscreen","chat-mobile-open"),["homePage","searchPage","notificationPage","messagesPage","profilePage","bookmarksPage","pollsPage","adminPage","detailPage","accountSettingsPage"].forEach((e=>t(e)?.classList.add("hidden"))),n.classList.remove("hidden"),n.style.display="block",o&&c.parentElement!==o&&o.appendChild(c),o&&(o.classList.remove("hidden"),o.style.display="block",o.style.width="100%",o.style.minHeight="calc(100dvh - 70px)"),c.classList.remove("hidden"),c.style.display="block",c.style.width="100%",c.style.height="calc(100dvh - 70px)",c.style.minHeight="500px";const i=t("homeChatWidget");i&&(i.classList.add("disabled"),i.style.display="none"),requestAnimationFrame((()=>{try{c.contentWindow?.syncChanProSession?.(),a().manual_chat_join||c.contentWindow?.startChat?.()}catch(t){console.warn("チャット起動",t)}}))}function l(){const e=t("app"),a=t("chatPage"),n=t("homeChatSlot"),o=t("chatPageFrame");e?.classList.remove("chanpro-chat-wide-open","chat-fullscreen","chat-mobile-open"),a?.classList.add("hidden"),o&&n&&o.parentElement!==n&&n.appendChild(o),i()}const h="function"==typeof showPage?showPage:null;window.showPage=async function(t,...e){if("chat"!==t){if(!["settings","accountSettings","accountSettingsPage"].includes(t))return"home"===t?(l(),h&&await h.call(this,t,...e),void i()):(l(),h?await h.call(this,t,...e):void 0);s()}else d()},document.addEventListener("change",(async e=>{const a=e.target;if(a?.id)return"accountHomeChatEnabled"===a.id?(e.stopImmediatePropagation(),void await c({home_chat_enabled:!!a.checked})):"accountManualChatJoin"===a.id?(e.stopImmediatePropagation(),void await c({manual_chat_join:!!a.checked})):"accountDefaultChatRoom"===a.id?(e.stopImmediatePropagation(),void await c({default_chat_room:a.value.trim()})):"accountChatSound"===a.id?(e.stopImmediatePropagation(),void await c({chat_sound_enabled:!!a.checked})):"accountSoundVolume"===a.id?(e.stopImmediatePropagation(),await c({notification_volume:Number(a.value)}),void(t("accountSoundVolumeValue")&&(t("accountSoundVolumeValue").textContent=Math.round(100*Number(a.value))+"%"))):void("accountChatTheme"===a.id&&(e.stopImmediatePropagation(),await c({chat_theme:a.value||"blue"})))}),!0),document.addEventListener("click",(t=>{const e=t.target.closest("button");if(e)return e.matches('#accountSettingsNav,[data-page="settings"]')||/アカウント設定/.test(e.textContent||"")?(t.preventDefault(),t.stopImmediatePropagation(),void s()):void(((e.getAttribute("onclick")||"").includes('showPage("chat")')||/チャットへ移動/.test(e.title||"")&&/チャット/.test(e.textContent||""))&&(t.preventDefault(),t.stopImmediatePropagation(),d()))}),!0),document.addEventListener("DOMContentLoaded",(()=>{const t=document.querySelector(".nav");t&&[...t.querySelectorAll("button")].filter((t=>/チャット/.test((t.textContent||"").trim()))).forEach(((t,e)=>{e>0?t.remove():(t.removeAttribute("onclick"),t.onclick=t=>{t.preventDefault(),d()},t.title="チャットへ移動")})),i()})),window.addEventListener("load",i)})()</script>
 <style id=chanpro-session-stable-v3>#app.chanpro-chat-wide-open #chatPage{display:block!important;position:static!important;grid-column:1/-1!important;width:100%!important;max-width:none!important;min-height:100vh!important;background:#fff!important}#app.chanpro-chat-wide-open>.main,#app.chanpro-chat-wide-open>.rightbar{visibility:hidden!important;pointer-events:none!important}#app.chanpro-chat-wide-open #chatPageFrameWrap{position:fixed!important;inset:0 0 0 260px!important;z-index:80!important;width:auto!important;height:100dvh!important;min-height:0!important;max-width:none!important;overflow:hidden!important;background:#fff!important}#app.chanpro-chat-wide-open #chatPageFrame{display:block!important;position:absolute!important;inset:0!important;width:100%!important;height:100%!important;min-height:0!important;border:0!important}@media(max-width:1000px){#app.chanpro-chat-wide-open #chatPageFrameWrap{left:80px!important}}@media(max-width:650px){#app.chanpro-chat-wide-open #chatPageFrameWrap{left:0!important;bottom:60px!important;height:calc(100dvh - 60px)!important}}</style>
-<script id=chanpro-session-stable-v3-script>(()=>{const e=e=>document.getElementById(e),t=()=>{try{return"undefined"!=typeof currentUser?currentUser:window.currentUser||null}catch{return window.currentUser||null}},n=()=>t()?.settings||(t()?t().settings={}:{});let a=Promise.resolve();async function o(e){const o=t();if(!o?.id)return;const c={home_chat_enabled:!0,manual_chat_join:!1,default_chat_room:"room",chat_sound_enabled:!0,notification_volume:.5,chat_theme:"blue",...n(),...e};o.settings=c,window.__gatherHomeChatEnabled=!1!==c.home_chat_enabled,a=a.then((async()=>{const e=window.supabaseClient||(()=>{try{return"undefined"!=typeof supabaseClient?supabaseClient:null}catch{return null}})();if(!e)throw Error("Supabase client unavailable");const{error:t}=await e.from("users").update({settings:c}).eq("id",o.id);if(t)throw t}));try{await a}catch(e){console.error("users.settings 保存失敗",e),window.toast?.("設定を保存できませんでした")}}function c(){const t=e("app"),a=e("homeChatWidget");if(!t||!a)return;const o=!1!==n().home_chat_enabled,c=t.classList.contains("chanpro-chat-wide-open");t.classList.toggle("gather-chat-off",!o&&!c),a.style.display=o&&!c?"flex":"none",a.classList.toggle("disabled",!o&&!c);const i=e("accountHomeChatEnabled");i&&(i.checked=o)}function i(){const a=e("chatPageFrame");if(!a)return;const o=t();if(o)try{const e=a.contentWindow;e.__CHANPRO_SHARED_SESSION__={id:o.id,username:o.username,icon_url:o.icon_url||null,role:o.role||"user"},e.currentUser=e.currentUser||e.__CHANPRO_SHARED_SESSION__,e.__gatherManualChatJoin=!!n().manual_chat_join,e.__gatherChatSoundEnabled=!1!==n().chat_sound_enabled,e.__gatherChatSoundVolume=Number(n().notification_volume??.5),"function"==typeof e.syncChanProSession&&e.syncChanProSession(),n().manual_chat_join||"function"!=typeof e.startChat||e.startChat()}catch(e){console.warn("チャットへのログイン状態同期",e)}}function s(){const t=e("app"),n=e("chatPage"),a=e("chatPageFrameWrap"),o=e("chatPageFrame");e("homeChatSlot");t&&n&&a&&o&&(t.classList.add("chanpro-chat-wide-open"),t.classList.remove("chat-fullscreen","chat-mobile-open"),["homePage","searchPage","notificationPage","messagesPage","profilePage","bookmarksPage","pollsPage","adminPage","detailPage","accountSettingsPage"].forEach((t=>e(t)?.classList.add("hidden"))),n.classList.remove("hidden"),n.style.display="block",a.classList.remove("hidden"),a.style.display="block",o.parentElement!==a&&a.appendChild(o),o.style.display="block",o.style.width="100%",o.style.height="100%",requestAnimationFrame(i))}function u(){const t=e("app"),n=e("chatPage"),a=e("chatPageFrameWrap"),o=e("chatPageFrame"),i=e("homeChatSlot");t?.classList.remove("chanpro-chat-wide-open","chat-fullscreen","chat-mobile-open"),n?.classList.add("hidden"),a&&(a.style.display=""),o&&i&&o.parentElement!==i&&i.appendChild(o),o&&(o.style.display="block",o.style.height="calc(100vh - 70px)"),c()}function d(){const t=e("accountSettingsPage"),a=document.querySelector(".main");if(!t||!a)return;"function"==typeof hidePages?hidePages():[...a.children].forEach((e=>e.classList.add("hidden"))),t.classList.remove("hidden"),t.style.display="block";const o=n();e("accountHomeChatEnabled")&&(e("accountHomeChatEnabled").checked=!1!==o.home_chat_enabled),e("accountManualChatJoin")&&(e("accountManualChatJoin").checked=!!o.manual_chat_join),e("accountDefaultChatRoom")&&(e("accountDefaultChatRoom").value=o.default_chat_room||""),e("accountChatSound")&&(e("accountChatSound").checked=!1!==o.chat_sound_enabled),e("accountSoundVolume")&&(e("accountSoundVolume").value=Number(o.notification_volume??.5)),e("accountSoundVolumeValue")&&(e("accountSoundVolumeValue").textContent=Math.round(100*Number(o.notification_volume??.5))+"%"),e("accountChatTheme")&&(e("accountChatTheme").value=o.chat_theme||"blue"),e("accountPostSound")&&(e("accountPostSound").checked=!1!==o.post_notification_sound_enabled)}function l(){const t=e("accountSettingsPage");if(!t||e("accountPostSound"))return;const n=document.createElement("div");n.className="settingsGroup",n.innerHTML='<h3>ポスト通知</h3><label><input type="checkbox" id="accountPostSound" style="width:auto"> ポストの通知を受信したときに音を鳴らす</label>';const a=e("accountChatSound")?.closest(".settingsGroup");a?a.insertAdjacentElement("afterend",n):t.appendChild(n)}document.addEventListener("change",(async t=>{const n=t.target;n?.id&&("accountHomeChatEnabled"===n.id?(await o({home_chat_enabled:!!n.checked}),c()):"accountManualChatJoin"===n.id?(await o({manual_chat_join:!!n.checked}),i()):"accountDefaultChatRoom"===n.id?await o({default_chat_room:n.value.trim()}):"accountChatSound"===n.id?(await o({chat_sound_enabled:!!n.checked}),i()):"accountSoundVolume"===n.id?(await o({notification_volume:Number(n.value)}),e("accountSoundVolumeValue")&&(e("accountSoundVolumeValue").textContent=Math.round(100*Number(n.value))+"%"),i()):"accountChatTheme"===n.id?await o({chat_theme:n.value||"blue"}):"accountPostSound"===n.id&&await o({post_notification_sound_enabled:!!n.checked}))}),!0),document.addEventListener("input",(t=>{"accountSoundVolume"===t.target?.id&&e("accountSoundVolumeValue")&&(e("accountSoundVolumeValue").textContent=Math.round(100*Number(t.target.value))+"%")}),!0);const r=window.showPage;window.showPage=function(e,...t){if("chat"!==e){if(["settings","accountSettings","accountSettingsPage"].includes(e))return l(),void d();if("home"===e){u();const n=r?.call(this,e,...t);return c(),n}return u(),r?.call(this,e,...t)}s()},document.addEventListener("click",(e=>{const t=e.target.closest("button");if(t)return"accountSettingsNav"===t.id||/アカウント設定/.test(t.textContent||"")?(e.preventDefault(),e.stopImmediatePropagation(),l(),void d()):void(((t.getAttribute("onclick")||"").includes('showPage("chat")')||/チャットへ移動/.test(t.title||"")&&/チャット/.test(t.textContent||""))&&(e.preventDefault(),e.stopImmediatePropagation(),s()))}),!0);let h=new WeakSet;function m(){const t=e("notificationPage")||e("notificationsList")||e("notificationList");t&&!t.__postSoundObserver&&(t.__postSoundObserver=new MutationObserver((e=>{if(!1===n().post_notification_sound_enabled)return;let t=!1;for(const n of e)for(const e of n.addedNodes)1===e.nodeType&&(h.has(e)||(h.add(e),t=!0),e.querySelectorAll?.("*").forEach((e=>h.add(e))));t&&((e=660)=>{try{const t=window.AudioContext||window.webkitAudioContext;if(!t)return;const n=new t,a=n.createOscillator(),o=n.createGain();a.frequency.value=e,o.gain.setValueAtTime(1e-4,n.currentTime),o.gain.exponentialRampToValueAtTime(.08,n.currentTime+.02),o.gain.exponentialRampToValueAtTime(1e-4,n.currentTime+.22),a.connect(o),o.connect(n.destination),a.start(),a.stop(n.currentTime+.23),a.onended=()=>n.close()}catch{}})(740)})),t.__postSoundObserver.observe(t,{childList:!0,subtree:!0}))}document.addEventListener("DOMContentLoaded",(()=>{l(),c();const t=document.querySelector(".nav");t&&[...t.querySelectorAll("button")].filter((e=>/チャット/.test(e.textContent||""))).forEach(((e,t)=>{t?e.remove():(e.removeAttribute("onclick"),e.onclick=e=>{e.preventDefault(),s()})})),e("chatPageFrame")?.addEventListener("load",i),m()})),window.addEventListener("load",(()=>{l(),c(),i(),m()}));const _=window.login;if("function"==typeof _&&!_.__sharedSessionWrapped){const e=async function(...e){const t=await _.apply(this,e);return setTimeout(i,0),t};e.__sharedSessionWrapped=!0,window.login=e}})()</script>
+<script id=chanpro-session-stable-v3-script>(()=>{const e=e=>document.getElementById(e),t=()=>{try{return"undefined"!=typeof currentUser?currentUser:window.currentUser||null}catch{return window.currentUser||null}},n=()=>t()?.settings||(t()?t().settings={}:{});let a=Promise.resolve();async function o(e){const o=t();if(!o?.id)return;const c={home_chat_enabled:!0,manual_chat_join:!1,default_chat_room:"room",chat_sound_enabled:!0,notification_volume:.5,chat_theme:"blue",...n(),...e};o.settings=c,window.__gatherHomeChatEnabled=!1!==c.home_chat_enabled,a=a.then((async()=>{const e=window.supabaseClient||(()=>{try{return"undefined"!=typeof supabaseClient?supabaseClient:null}catch{return null}})();if(!e)throw Error("Supabase client unavailable");const{error:t}=await e.from("users").update({settings:c}).eq("id",o.id);if(t)throw t}));try{await a}catch(e){console.error("users.settings 保存失敗",e),window.toast?.("設定を保存できませんでした")}}function c(){const t=e("app"),a=e("homeChatWidget");if(!t||!a)return;const o=!1!==n().home_chat_enabled,c=t.classList.contains("chanpro-chat-wide-open");t.classList.toggle("gather-chat-off",!o&&!c),a.style.display=o&&!c?"flex":"none",a.classList.toggle("disabled",!o&&!c);const i=e("accountHomeChatEnabled");i&&(i.checked=o)}function i(){const a=e("chatPageFrame");if(!a)return;const o=t();if(o)try{const e=a.contentWindow;e.__CHANPRO_SHARED_SESSION__={id:o.id,username:o.username,icon_url:o.icon_url||null,role:o.role||"user"},e.currentUser=e.currentUser||e.__CHANPRO_SHARED_SESSION__,e.__gatherManualChatJoin=!!n().manual_chat_join,e.__gatherChatSoundEnabled=!1!==n().chat_sound_enabled,e.__gatherChatSoundVolume=Number(n().notification_volume??.5),"function"==typeof e.syncChanProSession&&e.syncChanProSession(),n().manual_chat_join||"function"!=typeof e.startChat||e.startChat()}catch(e){console.warn("チャットへのログイン状態同期",e)}}function s(){const t=e("app"),n=e("chatPage"),a=e("chatPageFrameWrap"),o=e("chatPageFrame");e("homeChatSlot"),t&&n&&a&&o&&(t.classList.add("chanpro-chat-wide-open"),t.classList.remove("chat-fullscreen","chat-mobile-open"),["homePage","searchPage","notificationPage","messagesPage","profilePage","bookmarksPage","pollsPage","adminPage","detailPage","accountSettingsPage"].forEach((t=>e(t)?.classList.add("hidden"))),n.classList.remove("hidden"),n.style.display="block",a.classList.remove("hidden"),a.style.display="block",o.parentElement!==a&&a.appendChild(o),o.style.display="block",o.style.width="100%",o.style.height="100%",requestAnimationFrame(i))}function u(){const t=e("app"),n=e("chatPage"),a=e("chatPageFrameWrap"),o=e("chatPageFrame"),i=e("homeChatSlot");t?.classList.remove("chanpro-chat-wide-open","chat-fullscreen","chat-mobile-open"),n?.classList.add("hidden"),a&&(a.style.display=""),o&&i&&o.parentElement!==i&&i.appendChild(o),o&&(o.style.display="block",o.style.height="calc(100vh - 70px)"),c()}function d(){const t=e("accountSettingsPage"),a=document.querySelector(".main");if(!t||!a)return;"function"==typeof hidePages?hidePages():[...a.children].forEach((e=>e.classList.add("hidden"))),t.classList.remove("hidden"),t.style.display="block";const o=n();e("accountHomeChatEnabled")&&(e("accountHomeChatEnabled").checked=!1!==o.home_chat_enabled),e("accountManualChatJoin")&&(e("accountManualChatJoin").checked=!!o.manual_chat_join),e("accountDefaultChatRoom")&&(e("accountDefaultChatRoom").value=o.default_chat_room||""),e("accountChatSound")&&(e("accountChatSound").checked=!1!==o.chat_sound_enabled),e("accountSoundVolume")&&(e("accountSoundVolume").value=Number(o.notification_volume??.5)),e("accountSoundVolumeValue")&&(e("accountSoundVolumeValue").textContent=Math.round(100*Number(o.notification_volume??.5))+"%"),e("accountChatTheme")&&(e("accountChatTheme").value=o.chat_theme||"blue"),e("accountPostSound")&&(e("accountPostSound").checked=!1!==o.post_notification_sound_enabled)}function l(){const t=e("accountSettingsPage");if(!t||e("accountPostSound"))return;const n=document.createElement("div");n.className="settingsGroup",n.innerHTML='<h3>ポスト通知</h3><label><input type="checkbox" id="accountPostSound" style="width:auto"> ポストの通知を受信したときに音を鳴らす</label>';const a=e("accountChatSound")?.closest(".settingsGroup");a?a.insertAdjacentElement("afterend",n):t.appendChild(n)}document.addEventListener("change",(async t=>{const n=t.target;n?.id&&("accountHomeChatEnabled"===n.id?(await o({home_chat_enabled:!!n.checked}),c()):"accountManualChatJoin"===n.id?(await o({manual_chat_join:!!n.checked}),i()):"accountDefaultChatRoom"===n.id?await o({default_chat_room:n.value.trim()}):"accountChatSound"===n.id?(await o({chat_sound_enabled:!!n.checked}),i()):"accountSoundVolume"===n.id?(await o({notification_volume:Number(n.value)}),e("accountSoundVolumeValue")&&(e("accountSoundVolumeValue").textContent=Math.round(100*Number(n.value))+"%"),i()):"accountChatTheme"===n.id?await o({chat_theme:n.value||"blue"}):"accountPostSound"===n.id&&await o({post_notification_sound_enabled:!!n.checked}))}),!0),document.addEventListener("input",(t=>{"accountSoundVolume"===t.target?.id&&e("accountSoundVolumeValue")&&(e("accountSoundVolumeValue").textContent=Math.round(100*Number(t.target.value))+"%")}),!0);const r=window.showPage;window.showPage=function(e,...t){if("chat"!==e){if(["settings","accountSettings","accountSettingsPage"].includes(e))return l(),void d();if("home"===e){u();const n=r?.call(this,e,...t);return c(),n}return u(),r?.call(this,e,...t)}s()},document.addEventListener("click",(e=>{const t=e.target.closest("button");if(t)return"accountSettingsNav"===t.id||/アカウント設定/.test(t.textContent||"")?(e.preventDefault(),e.stopImmediatePropagation(),l(),void d()):void(((t.getAttribute("onclick")||"").includes('showPage("chat")')||/チャットへ移動/.test(t.title||"")&&/チャット/.test(t.textContent||""))&&(e.preventDefault(),e.stopImmediatePropagation(),s()))}),!0);let h=new WeakSet;function m(){const t=e("notificationPage")||e("notificationsList")||e("notificationList");t&&!t.__postSoundObserver&&(t.__postSoundObserver=new MutationObserver((e=>{if(!1===n().post_notification_sound_enabled)return;let t=!1;for(const n of e)for(const e of n.addedNodes)1===e.nodeType&&(h.has(e)||(h.add(e),t=!0),e.querySelectorAll?.("*").forEach((e=>h.add(e))));t&&((e=660)=>{try{const t=window.AudioContext||window.webkitAudioContext;if(!t)return;const n=new t,a=n.createOscillator(),o=n.createGain();a.frequency.value=e,o.gain.setValueAtTime(1e-4,n.currentTime),o.gain.exponentialRampToValueAtTime(.08,n.currentTime+.02),o.gain.exponentialRampToValueAtTime(1e-4,n.currentTime+.22),a.connect(o),o.connect(n.destination),a.start(),a.stop(n.currentTime+.23),a.onended=()=>n.close()}catch{}})(740)})),t.__postSoundObserver.observe(t,{childList:!0,subtree:!0}))}document.addEventListener("DOMContentLoaded",(()=>{l(),c();const t=document.querySelector(".nav");t&&[...t.querySelectorAll("button")].filter((e=>/チャット/.test(e.textContent||""))).forEach(((e,t)=>{t?e.remove():(e.removeAttribute("onclick"),e.onclick=e=>{e.preventDefault(),s()})})),e("chatPageFrame")?.addEventListener("load",i),m()})),window.addEventListener("load",(()=>{l(),c(),i(),m()}));const _=window.login;if("function"==typeof _&&!_.__sharedSessionWrapped){const e=async function(...e){const t=await _.apply(this,e);return setTimeout(i,0),t};e.__sharedSessionWrapped=!0,window.login=e}})()</script>
 <script id=chanpro-settings-chat-sync-final>(()=>{const t=t=>document.getElementById(t),e={home_chat_enabled:!0,manual_chat_join:!1,default_chat_room:"room",chat_sound_enabled:!0,notification_volume:.5,chat_theme:"blue"},n=()=>{try{return"undefined"!=typeof currentUser?currentUser:window.currentUser||null}catch{return window.currentUser||null}},a=()=>{try{return"undefined"!=typeof supabaseClient?supabaseClient:window.supabaseClient||null}catch{return window.supabaseClient||null}},o=()=>{const t=n();return t?(t.settings={...e,...t.settings||{}},t.settings):{...e}};let c=Promise.resolve();async function u(t){const u=n(),h=a();if(!u?.id||!h)return i("ログイン後に設定を保存できます"),!1;window.__gatherHomeChatEnabled=Object.prototype.hasOwnProperty.call(t,"home_chat_enabled")?t.home_chat_enabled:o().home_chat_enabled,c=c.catch((()=>{})).then((async()=>{const{data:n,error:a}=await h.from("users").select("settings").eq("id",u.id).maybeSingle();if(a)throw a;const o={...e,...u.settings||{},...n?.settings||{},...t},{data:c,error:i}=await h.from("users").update({settings:o}).eq("id",u.id).select("id,settings").maybeSingle();if(i)throw i;if(!c)throw new Error("設定の保存対象がありません。usersテーブルのRLS/UPDATE権限を確認してください");return u.settings={...e,...c.settings||o},u.settings}));try{return await c,i("設定を保存しました"),s(),r(),!0}catch(t){return console.error("users.settings の保存に失敗:",t),i("設定を保存できませんでした: "+(t.message||t)),!1}}function i(e){const n=t("accountSettingsStatus");n?n.textContent=e:"function"==typeof toast&&toast(e)}function s(){const e=t("app"),n=t("homeChatWidget");if(!e||!n)return;const a=o(),c=e.classList.contains("chanpro-chat-wide-open");e.classList.toggle("gather-chat-off",!a.home_chat_enabled&&!c),n.classList.toggle("disabled",!a.home_chat_enabled&&!c),n.style.display=a.home_chat_enabled&&!c?"flex":"none";const u=t("accountHomeChatEnabled");u&&(u.checked=!!a.home_chat_enabled);const i=t("accountManualChatJoin");i&&(i.checked=!!a.manual_chat_join)}function r(){const e=t("chatPageFrame"),a=n();if(e&&e.contentWindow&&!o().home_chat_enabled)try{e.contentWindow.__gatherChatDisabled=!0,e.contentWindow.__chanproForceLeave&&e.contentWindow.__chanproForceLeave()}catch{}else if(e&&a?.id&&e.contentWindow)try{const t=e.contentWindow,n=o();t.__gatherChatDisabled=!1,t.__CHANPRO_SHARED_SESSION__={id:a.id,username:a.username,icon_url:a.icon_url||null,role:a.role||"user"},t.__gatherManualChatJoin=!!n.manual_chat_join,t.__gatherDefaultChatRoom=String(n.default_chat_room||"room"),t.__gatherChatSoundEnabled=!!n.chat_sound_enabled,t.__gatherChatSoundVolume=Number(n.notification_volume??.5),"function"==typeof t.syncChanProSession&&t.syncChanProSession(),n.manual_chat_join||"function"!=typeof t.startChat||t.__chanproAutoStartRequested||(t.__chanproAutoStartRequested=!0,Promise.resolve(t.startChat()).catch((e=>{t.__chanproAutoStartRequested=!1,console.warn("チャット自動接続:",e)})))}catch(t){console.warn("チャット同期:",t)}}async function h(){const t=n(),o=a();if(t?.id&&o){try{const{data:n,error:a}=await o.from("users").select("settings").eq("id",t.id).maybeSingle();if(a)throw a;t.settings={...e,...n?.settings||t.settings||{}}}catch(n){console.warn("設定の再読み込みに失敗:",n),t.settings={...e,...t.settings||{}}}s(),r(),d()}}function d(){const e=o();t("accountHomeChatEnabled")&&(t("accountHomeChatEnabled").checked=!!e.home_chat_enabled),t("accountManualChatJoin")&&(t("accountManualChatJoin").checked=!!e.manual_chat_join),t("accountDefaultChatRoom")&&(t("accountDefaultChatRoom").value=e.default_chat_room||"room"),t("accountChatSound")&&(t("accountChatSound").checked=!!e.chat_sound_enabled),t("accountSoundVolume")&&(t("accountSoundVolume").value=Number(e.notification_volume??.5)),t("accountSoundVolumeValue")&&(t("accountSoundVolumeValue").textContent=Math.round(100*Number(e.notification_volume??.5))+"%"),t("accountChatTheme")&&(t("accountChatTheme").value=e.chat_theme||"blue")}document.addEventListener("change",(t=>{const e=t.target;if(!e?.id)return;const n={accountHomeChatEnabled:["home_chat_enabled",!!e.checked],accountManualChatJoin:["manual_chat_join",!!e.checked],accountDefaultChatRoom:["default_chat_room",e.value.trim()||"room"],accountChatSound:["chat_sound_enabled",!!e.checked],accountSoundVolume:["notification_volume",Number(e.value)],accountChatTheme:["chat_theme",e.value||"blue"]}[e.id];n&&(t.stopImmediatePropagation(),t.preventDefault(),u({[n[0]]:n[1]}),"accountHomeChatEnabled"===e.id&&s(),["accountManualChatJoin","accountChatSound","accountSoundVolume","accountChatTheme","accountDefaultChatRoom"].includes(e.id)&&r())}),!0),document.addEventListener("input",(e=>{const n=e.target;if(!n?.id)return;"accountSoundVolume"===n.id&&t("accountSoundVolumeValue")&&(t("accountSoundVolumeValue").textContent=Math.round(100*Number(n.value))+"%");const a={accountHomeChatEnabled:["home_chat_enabled",!!n.checked],accountManualChatJoin:["manual_chat_join",!!n.checked],accountDefaultChatRoom:["default_chat_room",n.value.trim()||"room"],accountChatSound:["chat_sound_enabled",!!n.checked],accountSoundVolume:["notification_volume",Number(n.value)],accountChatTheme:["chat_theme",n.value||"blue"]};a[n.id]&&u({[a[n.id][0]]:a[n.id][1]})}),!0);const l=window.afterLogin;if("function"==typeof l&&!l.__settingsSyncWrapped){const t=async function(...t){const e=await l.apply(this,t);return await h(),e};t.__settingsSyncWrapped=!0,window.afterLogin=t}const _=window.showPage;if("function"==typeof _&&!_.__chatKeepAliveWrapped){const e=async function(e,...n){if("chat"===e)return t("chatPageFrame"),r(),_.call(this,e,...n);const a=await _.call(this,e,...n);return s(),a};e.__chatKeepAliveWrapped=!0,window.showPage=e}document.addEventListener("DOMContentLoaded",(()=>{d(),s(),t("chatPageFrame")?.addEventListener("load",(()=>{r()}))})),window.addEventListener("load",(()=>{n()?.id&&h()})),window.__chanproReloadSettings=h})()</script>
 <script id=chanpro-chat-single-session-guard>(()=>{const n=()=>document.getElementById("chatPageFrame");function t(){const t=n();if(t&&t.contentWindow)try{const n=t.contentWindow;if(n.__chanproNavSyncInstalled)return;n.__chanproNavSyncInstalled=!0;const e=n.startChat;if("function"==typeof e){const t=async function(...t){if(!(n.__chanproChatStartLock||n.started&&n.client))return e.apply(this,t)};t.__chanproSingleSessionGuard=!0,n.startChat=t}}catch(n){console.warn("チャット接続ガード:",n)}}document.addEventListener("DOMContentLoaded",(()=>{const e=n();e&&e.addEventListener("load",t),t()})),window.addEventListener("load",t)})()</script>
 <style id=gather-final-nav-and-bar-fix>#chanproTopReveal{height:30px!important}#chanproTopBar{max-height:64px!important;flex-wrap:nowrap!important}#chanproTopBar button{white-space:nowrap!important;flex-shrink:0!important}.nav button[data-remove-chat-nav="1"]{display:none!important}</style>
 <script id=gather-final-ui-behavior-fix>(()=>{function e(){document.querySelectorAll(".nav button").forEach((e=>{/チャット/.test((e.textContent||"").trim())&&(e.dataset.removeChatNav="1",e.remove())}))}function t(){const e=document.getElementById("accountHomeChatEnabled");e&&e.parentElement&&!e.parentElement.dataset.gatherLabelFixed&&(e.parentElement.dataset.gatherLabelFixed="1",e.parentElement.lastChild.textContent=" ホームにチャットを表示する（オフにするとチャットから退出）");const t=document.getElementById("accountManualChatJoin");t&&t.parentElement&&!t.parentElement.dataset.gatherLabelFixed&&(t.parentElement.dataset.gatherLabelFixed="1",t.parentElement.lastChild.textContent=" チャットにログイン時に自動で参加しない（「チャットルームに入る」を押すまで接続しない）")}function n(){e(),t();const n=document.getElementById("chanproTopBar"),a=document.getElementById("chanproTopReveal");if(n&&a&&!n.dataset.gatherHideFixed){n.dataset.gatherHideFixed="1";const e=()=>{n.matches(":hover")||a.matches(":hover")||n.contains(document.activeElement)||(n.style.transform="translateY(-110%)")};n.addEventListener("mouseleave",(t=>{t.clientY>35&&e()})),a.addEventListener("mouseleave",(t=>{t.clientY>55&&e()})),document.addEventListener("mousemove",(t=>{t.clientY<=26?n.style.transform="translateY(0)":t.clientY>65&&!n.matches(":hover")&&!a.matches(":hover")&&e()}))}}"loading"===document.readyState?document.addEventListener("DOMContentLoaded",n,{once:!0}):n(),window.addEventListener("load",(()=>{e(),t()}),{once:!0})})()</script>
 <script id=gather-v5-prelogin-and-settings-fix>(()=>{const t=t=>document.getElementById(t);function e(){const e=(()=>{try{return"undefined"!=typeof currentUser?currentUser:window.currentUser||null}catch(t){return window.currentUser||null}})(),n=String(e?.settings?.default_chat_room||"room").trim()||"room";window.__gatherDefaultChatRoom=n;const o=t("chatPageFrame");try{const t=o?.contentWindow;if(t){t.__gatherDefaultChatRoom=n;const a=o.contentDocument?.getElementById("setRoom");a&&(a.value=n);const r=o.contentDocument?.getElementById("setName");r&&e?.username&&(r.value=e.username)}}catch(t){}}function n(){const e=t("chatPageFrame");try{const t=e?.contentWindow;t&&"function"==typeof t.__gatherChatMqttWarmupStart&&t.__gatherChatMqttWarmupStart()}catch(t){}}document.addEventListener("DOMContentLoaded",(()=>{e(),n()})),window.addEventListener("load",(()=>{e(),n()}));const o=window.afterLogin;if("function"==typeof o&&!o.__gatherV5Wrapped){const t=async function(...t){const n=await o.apply(this,t);return e(),n};t.__gatherV5Wrapped=!0,window.afterLogin=t}document.addEventListener("change",(t=>{"accountDefaultChatRoom"===t.target?.id&&setTimeout(e,0)}),!0)})()</script>
 <style id=gather-chat-overlay-final-style>#chatPageFrame.gather-chat-fixed-fullscreen{position:fixed!important;top:44px!important;left:0!important;right:0!important;bottom:0!important;width:100vw!important;height:calc(100dvh - 44px)!important;min-width:0!important;min-height:0!important;max-width:none!important;max-height:none!important;margin:0!important;padding:0!important;border:0!important;display:block!important;z-index:10020!important;background:#fff!important}#chanproTopBar.gather-chat-bar-pinned{transform:translateY(0)!important;z-index:10023!important}#chanproTopReveal.gather-chat-bar-pinned{z-index:10022!important}body.gather-chat-overlay-open{overflow:hidden!important}@media(max-width:600px){#chatPageFrame.gather-chat-fixed-fullscreen{top:42px!important;height:calc(100dvh - 42px)!important}}</style>
-<script id=gather-chat-overlay-final-controller>(()=>{const t=t=>document.getElementById(t);let e=null,n="",o=!1;function a(t){try{const n=e?.contentDocument;if(!n?.documentElement)return;n.body?.classList.toggle("gather-fullscreen-chat",!!t);let o=n.getElementById("gather-fullscreen-chat-layout-fix");o||(o=n.createElement("style"),o.id="gather-fullscreen-chat-layout-fix",(n.head||n.documentElement).appendChild(o)),o.textContent="\n       #memberPanel:not(.gather-participants-open){display:none!important}\n       body.gather-fullscreen-chat{margin:0!important;padding:8px!important;height:100%!important;min-height:0!important;overflow:hidden!important;box-sizing:border-box!important}\n       body.gather-fullscreen-chat #main{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(210px,260px)!important;gap:12px!important;width:100%!important;max-width:none!important;height:calc(100dvh - 16px)!important;min-height:0!important;box-sizing:border-box!important;align-items:stretch!important;overflow:hidden!important}\n       body.gather-fullscreen-chat #left{display:flex!important;flex-direction:column!important;width:auto!important;max-width:none!important;min-width:0!important;height:100%!important;min-height:0!important;overflow:hidden!important}\n       body.gather-fullscreen-chat #users{flex:0 0 auto!important;max-height:100px!important;overflow:auto!important}\n       body.gather-fullscreen-chat #chat{flex:1 1 auto!important;min-height:0!important;height:auto!important;max-height:none!important;overflow:auto!important}\n       body.gather-fullscreen-chat #memberPanel{display:block!important;position:static!important;inset:auto!important;grid-column:2!important;grid-row:1!important;width:auto!important;min-width:0!important;max-width:none!important;height:100%!important;min-height:0!important;max-height:none!important;overflow:auto!important;box-sizing:border-box!important;margin:0!important;z-index:1!important}\n       body.gather-fullscreen-chat #gatherParticipantsButton{display:none!important}\n       body:not(.gather-fullscreen-chat) #memberPanel:not(.gather-participants-open){display:none!important}\n     "}catch(t){}}function r(){if(e=t("chatPageFrame"),!e)return;o||(n=e.getAttribute("style")||"",o=!0),e.classList.add("gather-chat-fixed-fullscreen"),e.style.setProperty("position","fixed","important"),e.style.setProperty("top","44px","important"),e.style.setProperty("left","0","important"),e.style.setProperty("right","0","important"),e.style.setProperty("bottom","0","important"),e.style.setProperty("width","100vw","important"),e.style.setProperty("height","calc(100dvh - 44px)","important"),e.style.setProperty("min-height","0","important"),e.style.setProperty("max-width","none","important"),e.style.setProperty("display","block","important"),e.style.setProperty("z-index","10020","important");const r=t("chanproTopBar"),i=t("chanproTopReveal");r?.classList.add("gather-chat-bar-pinned"),r&&(r.style.transform="translateY(0)"),i?.classList.add("gather-chat-bar-pinned"),document.body.classList.add("gather-chat-overlay-open"),a(!0),setTimeout((()=>a(!0)),100),setTimeout((()=>a(!0)),500)}function i(r=!0){e=e||t("chatPageFrame"),e&&(e.classList.remove("gather-chat-fixed-fullscreen"),n?e.setAttribute("style",n):e.removeAttribute("style"),a(!1));const i=t("chanproTopBar"),p=t("chanproTopReveal");if(i?.classList.remove("gather-chat-bar-pinned"),i&&(i.style.transform=""),p?.classList.remove("gather-chat-bar-pinned"),document.body.classList.remove("gather-chat-overlay-open"),o=!1,r&&"function"==typeof window.showPage)try{window.showPage("home")}catch(t){console.warn("ホーム表示切替:",t)}}document.addEventListener("click",(t=>{const e=t.target?.closest?.("button");if(e){if(e.closest("#chanproTopBar")){const n=(e.innerText||e.textContent||"").trim();if(/チャット/.test(n))return t.preventDefault(),t.stopPropagation(),t.stopImmediatePropagation(),void(o?i(!1):r());if(/ホーム|投稿|chanpro-gather/.test(n)&&o)return t.preventDefault(),t.stopPropagation(),t.stopImmediatePropagation(),void i(!0)}(function(t){return!!t&&(/チャット/.test((t.innerText||t.textContent||"").trim())||"チャットへ移動"===t.title)})(e)&&(t.preventDefault(),t.stopPropagation(),t.stopImmediatePropagation(),o||r())}}),!0),window.__gatherOpenFullscreenChat=r,window.__gatherCloseFullscreenChat=i,document.addEventListener("keydown",(t=>{"Escape"===t.key&&o&&i(!0)}))})()</script>
-<script id=gather-device-fingerprint-scope-fix>"function"!=typeof window.getDeviceFingerprint&&(window.getDeviceFingerprint=async function(){const n="function"==typeof getDeviceInfo?getDeviceInfo():{userAgent:navigator.userAgent||"",platform:navigator.platform||"",language:navigator.language||""},t=JSON.stringify(n);let e="";if("function"==typeof sha256)e=await sha256(t);else{const n=await crypto.subtle.digest("SHA-256",(new TextEncoder).encode(t));e=Array.from(new Uint8Array(n)).map((n=>n.toString(16).padStart(2,"0"))).join("")}return{hash:e,info:n}})</script>
-<script id=gather-sidebar-more-items-final>(()=>{const e="gatherNavMoreButton",t="gatherNavMorePanel";function n(){document.getElementById(t)?.remove(),document.getElementById(e)?.setAttribute("aria-expanded","false")}function o(){const o=document.querySelector(".sidebar .nav");if(!o)return;o.querySelectorAll('[data-gather-nav-overflow="1"]').forEach((e=>{e.style.display="",e.removeAttribute("data-gather-nav-overflow")}));const a=[...o.querySelectorAll("button")].filter((t=>t.id!==e&&!t.classList.contains("hidden")&&"none"!==getComputedStyle(t).display));let r=document.getElementById(e);if(a.length<=8)return n(),r?.remove(),void a.forEach((e=>{e.style.display="",e.removeAttribute("data-gather-nav-overflow")}));const d=a.slice(8);d.forEach((e=>{e.dataset.gatherNavOverflow="1",e.style.display="none"})),r||(r=document.createElement("button"),r.type="button",r.id=e,r.className="secondary",r.textContent="＋ もっと表示",r.setAttribute("aria-expanded","false"),r.style.cssText="width:100%;margin-top:4px;text-align:left;",o.appendChild(r)),r.__gatherOverflowItems=d,r.dataset.ready||(r.dataset.ready="1",r.addEventListener("click",(e=>{e.preventDefault(),e.stopPropagation();if(document.getElementById(t))return void n();const o=r.__gatherOverflowItems||[];if(!o.length)return;const a=document.createElement("div");a.id=t,a.setAttribute("role","dialog"),a.setAttribute("aria-label","その他のメニュー"),a.style.cssText="position:fixed;z-index:20050;background:#fff;color:#0f1419;border:1px solid #cfd9de;border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.22);width:min(300px,85vw);max-height:55vh;overflow:auto;padding:8px;box-sizing:border-box;";const d=r.getBoundingClientRect();a.style.left=Math.max(8,Math.min(d.left,window.innerWidth-308))+"px",a.style.bottom=Math.max(8,window.innerHeight-d.top+6)+"px";const i=document.createElement("table");i.style.cssText="width:100%;border-collapse:collapse;";const s=document.createElement("caption");s.textContent="その他のメニュー",s.style.cssText="text-align:left;font-weight:700;padding:8px;border-bottom:1px solid #e1e8ed;",i.appendChild(s),o.forEach((e=>{const t=document.createElement("tr");t.style.cssText="border-bottom:1px solid #eef1f3;cursor:pointer;";const o=document.createElement("td");o.style.cssText="padding:2px;width:100%;";const a=document.createElement("button");a.type="button",a.className="secondary",a.style.cssText="width:100%;text-align:left;background:transparent;color:#0f1419;border:0;padding:10px;border-radius:8px;";const r=e.querySelector("img");if(r){const e=r.cloneNode();e.style.cssText="width:22px;height:22px;object-fit:contain;vertical-align:middle;margin-right:10px;",a.appendChild(e)}const d=document.createElement("span");d.textContent=(e.innerText||e.textContent||"").trim().replace(/\s+/g," "),a.appendChild(d),a.addEventListener("click",(()=>{n(),e.click()})),o.appendChild(a),t.appendChild(o),i.appendChild(t)})),a.appendChild(i),document.body.appendChild(a),r.setAttribute("aria-expanded","true")})))}"loading"===document.readyState?document.addEventListener("DOMContentLoaded",o,{once:!0}):o();const a=document.querySelector(".sidebar .nav");a&&window.MutationObserver&&new MutationObserver((()=>{clearTimeout(window.__gatherNavMoreTimer),window.__gatherNavMoreTimer=setTimeout(o,80)})).observe(a,{childList:!0,subtree:!0,attributes:!0,attributeFilter:["class"]}),document.addEventListener("click",(e=>{e.target?.closest?.("#gatherNavMorePanel")||e.target?.closest?.("#gatherNavMoreButton")||n()})),document.addEventListener("keydown",(e=>{"Escape"===e.key&&n()})),window.addEventListener("resize",n)})()</script>
-
-<style id="chanpro-mobile-chat-final-fix">
-/* スマホではホームの投稿画面にチャット不可メッセージを表示 */
-#homeChatMobileNotice{display:none;box-sizing:border-box;margin:12px 15px;padding:14px 16px;border:1px solid #cfd9de;border-radius:12px;background:#f7f9fa;color:#536471;font-size:14px;line-height:1.65}
-#homeChatMobileNotice strong{display:block;color:#0f1419;margin-bottom:4px;font-size:15px}
-@media(max-width:760px){
-  #homeChatMobileNotice{display:block}
-  #homeChatWidget{display:none!important}
-  .app.chat-fullscreen #homeChatWidget,
-  .app.chanpro-chat-wide-open #homeChatWidget,
-  .app.chat-mobile-open #homeChatWidget{display:flex!important}
-}
-</style>
-<script id="chanpro-mobile-chat-final-controller">
-(()=> {
-  const $ = id => document.getElementById(id);
-  function ensureHomeNotice(){
-    const home = $('homePage');
-    if(!home || $('homeChatMobileNotice')) return;
-    const notice = document.createElement('div');
-    notice.id = 'homeChatMobileNotice';
-    notice.setAttribute('role','status');
-    notice.innerHTML = '<strong>ホーム画面のチャットについて</strong>スマートフォンではホーム画面のチャットは使えません。全画面チャットを開いてご利用ください。';
-    const header = home.querySelector('.pageHeader');
-    if(header && header.parentNode) header.insertAdjacentElement('afterend', notice);
-    else home.insertBefore(notice, home.firstChild);
-  }
-  function patchInnerChat(){
-    const frame = $('chatPageFrame');
-    if(!frame) return;
-    try{
-      const doc = frame.contentDocument;
-      if(!doc || !doc.documentElement) return;
-      const head = doc.head || doc.documentElement;
-      let style = doc.getElementById('chanpro-mobile-chat-layout-final');
-      if(!style){ style = doc.createElement('style'); style.id='chanpro-mobile-chat-layout-final'; head.appendChild(style); }
-      style.textContent = `
-        /* 幅が狭い場合は参加者欄を重ねて表示し、チャット欄を優先 */
-        @media(max-width:900px){
-          body.gather-fullscreen-chat #main{
-            display:grid!important;
-            grid-template-columns:minmax(0,1fr)!important;
-            gap:8px!important;
-            width:100%!important;
-            max-width:none!important;
-            height:calc(100dvh - 16px)!important;
-            min-height:0!important;
-            overflow:hidden!important;
-          }
-          body.gather-fullscreen-chat #left{
-            grid-column:1!important;grid-row:1!important;
-            width:100%!important;max-width:none!important;min-width:0!important;
-            height:100%!important;min-height:0!important;
-          }
-          body.gather-fullscreen-chat #memberPanel{
-            display:none!important;
-            position:fixed!important;top:82px!important;right:10px!important;bottom:72px!important;left:auto!important;
-            width:min(280px,calc(100vw - 20px))!important;max-width:calc(100vw - 20px)!important;
-            height:auto!important;max-height:none!important;overflow:auto!important;
-            background:#fff!important;border:1px solid #cfd9de!important;border-radius:12px!important;
-            box-shadow:0 8px 28px rgba(0,0,0,.22)!important;z-index:10030!important;
-          }
-          body.gather-fullscreen-chat #memberPanel.gather-participants-open{display:block!important}
-          body.gather-fullscreen-chat #gatherParticipantsButton{
-            display:inline-flex!important;position:fixed!important;top:49px!important;right:10px!important;
-            z-index:10035!important;max-width:calc(100vw - 20px)!important;
-            min-height:36px!important;padding:7px 12px!important;border-radius:20px!important;
-            background:#fff!important;color:#0f1419!important;border:1px solid #cfd9de!important;
-            box-shadow:0 2px 8px rgba(0,0,0,.12)!important;
-          }
-          body.gather-fullscreen-chat #chat{
-            min-width:0!important;width:100%!important;max-width:100%!important;
-            height:auto!important;max-height:none!important;min-height:0!important;overflow:auto!important;
-          }
-        }
-        @media(max-width:500px){
-          body.gather-fullscreen-chat{padding:5px!important}
-          body.gather-fullscreen-chat #main{height:calc(100dvh - 10px)!important}
-          body.gather-fullscreen-chat #gatherParticipantsButton{top:47px!important;right:7px!important}
-          body.gather-fullscreen-chat #memberPanel{top:82px!important;right:7px!important;bottom:68px!important}
-        }
-      `;
-    }catch(err){ /* iframeが準備中の場合は次のload/resizeで再試行 */ }
-  }
-  function apply(){
-    ensureHomeNotice();
-    patchInnerChat();
-  }
-  document.addEventListener('DOMContentLoaded', ()=>{
-    apply();
-    const frame=$('chatPageFrame');
-    frame?.addEventListener('load', patchInnerChat);
-    window.addEventListener('resize', patchInnerChat);
-    setTimeout(apply,250);
-    setTimeout(apply,900);
-  });
-  window.addEventListener('load', apply);
-  const oldAfterLogin=window.afterLogin;
-  if(typeof oldAfterLogin==='function' && !oldAfterLogin.__chanproMobileChatNoticeWrapped){
-    const wrapped=async function(...args){const result=await oldAfterLogin.apply(this,args);apply();return result};
-    wrapped.__chanproMobileChatNoticeWrapped=true;
-    window.afterLogin=wrapped;
-  }
-  const observer = new MutationObserver(()=>{ensureHomeNotice();});
-  if(document.documentElement) observer.observe(document.documentElement,{childList:true,subtree:true});
-})();
-</script>
-
-
-<style id="gather-chat-exclusive-screen-style">
-html.gather-chat-exclusive-screen,body.gather-chat-exclusive-screen{width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important;background:#fff!important}
-body.gather-chat-exclusive-screen #chatPageFrame.gather-chat-fixed-fullscreen{position:fixed!important;inset:44px 0 0 0!important;width:100vw!important;height:calc(100dvh - 44px)!important;min-width:0!important;min-height:0!important;max-width:none!important;max-height:none!important;margin:0!important;padding:0!important;border:0!important;display:block!important;visibility:visible!important;z-index:2147483000!important;background:#fff!important}
-#chanproTopBar.gather-chat-bar-pinned{position:fixed!important;top:0!important;left:0!important;right:0!important;width:100%!important;transform:translateY(0)!important;z-index:2147483002!important}
-#chanproTopReveal.gather-chat-bar-pinned{z-index:2147483003!important}
-</style>
-<script id="gather-chat-exclusive-screen-controller">
+<script id=gather-chat-overlay-final-controller>
 (()=>{
- const get=id=>document.getElementById(id);
- let saved=[],active=false;
- const keepIds=['chatPageFrame','chanproTopBar','chanproTopReveal'];
- function saveStyle(el){if(!saved.some(x=>x.el===el))saved.push({el,style:el.getAttribute('style')});}
- function isKeptBranch(el){return keepIds.some(id=>{const k=get(id);return k&&(el===k||el.contains(k));});}
- function enterExclusive(){
-   const f=get('chatPageFrame'); if(!f)return;
-   if(!active){saved=[];active=true;
-     // Keep the iframe in its original DOM location: moving it would reload the iframe and reconnect MQTT.
-     let node=f.parentElement;
-     while(node&&node!==document.body&&node!==document.documentElement){saveStyle(node);node.style.setProperty('display','contents','important');node=node.parentElement;}
-     const walk=parent=>{for(const child of Array.from(parent.children||[])){
-       if(['SCRIPT','STYLE'].includes(child.tagName))continue;
-       if(isKeptBranch(child)){if(child!==get('chatPageFrame')&&!keepIds.some(id=>get(id)===child))walk(child);}
-       else {saveStyle(child);child.style.setProperty('display','none','important');}
-     }};
-     walk(document.body);
-     const top=get('chanproTopBar'),reveal=get('chanproTopReveal');
-     [top,reveal].forEach(el=>{if(el){saveStyle(el);el.style.setProperty('display','flex','important');el.style.setProperty('visibility','visible','important');el.style.setProperty('position','fixed','important');el.style.setProperty('top','0','important');el.style.setProperty('left','0','important');el.style.setProperty('right','0','important');el.style.setProperty('z-index','2147483002','important');}});
-   }
-   document.documentElement.classList.add('gather-chat-exclusive-screen');document.body.classList.add('gather-chat-exclusive-screen');
-   f.classList.add('gather-chat-fixed-fullscreen');
-   f.style.setProperty('position','fixed','important');f.style.setProperty('top','44px','important');f.style.setProperty('left','0','important');f.style.setProperty('right','0','important');f.style.setProperty('bottom','0','important');f.style.setProperty('width','100vw','important');f.style.setProperty('height','calc(100dvh - 44px)','important');f.style.setProperty('max-width','none','important');f.style.setProperty('z-index','2147483000','important');
- }
- function leaveExclusive(){
-   document.documentElement.classList.remove('gather-chat-exclusive-screen');document.body.classList.remove('gather-chat-exclusive-screen');
-   const f=get('chatPageFrame');f?.classList.remove('gather-chat-fixed-fullscreen');
-   for(const item of saved.reverse()){if(item.style===null)item.el.removeAttribute('style');else item.el.setAttribute('style',item.style);}
-   saved=[];active=false;
- }
- const oldOpen=window.__gatherOpenFullscreenChat;
- if(typeof oldOpen==='function'&&!oldOpen.__exclusiveNoMove){
-   const open=function(...args){enterExclusive();const result=oldOpen.apply(this,args);setTimeout(enterExclusive,0);setTimeout(enterExclusive,100);return result;};
-   open.__exclusiveNoMove=true;window.__gatherOpenFullscreenChat=open;
- }
- const oldClose=window.__gatherCloseFullscreenChat;
- if(typeof oldClose==='function'&&!oldClose.__exclusiveNoMove){
-   const close=function(...args){const result=oldClose.apply(this,args);leaveExclusive();return result;};
-   close.__exclusiveNoMove=true;window.__gatherCloseFullscreenChat=close;
- }
- const observer=new MutationObserver(()=>{
-   if(document.body.classList.contains('gather-chat-overlay-open')){if(!active)enterExclusive();}
-   else if(active)leaveExclusive();
- });
- observer.observe(document.body,{attributes:true,attributeFilter:['class']});
- document.addEventListener('keydown',e=>{if(e.key==='Escape'&&active)setTimeout(leaveExclusive,0);},true);
-})();
-</script>
-<script id="gather-responsive-participants-no-reconnect">
-(()=>{
- const frame=document.getElementById('chatPageFrame');if(!frame)return;
- function adapt(){try{
-   const w=frame.contentWindow,d=frame.contentDocument;if(!w||!d)return;
-   const narrow=w.innerWidth<=900;
-   const button=d.getElementById('gatherParticipantsButton'),panel=d.getElementById('memberPanel');
-   if(button){button.style.setProperty('display',narrow?'inline-flex':'none','important');if(narrow){button.style.setProperty('position','fixed','important');button.style.setProperty('top','7px','important');button.style.setProperty('right','8px','important');button.style.setProperty('z-index','10035','important');button.style.setProperty('background','#fff','important');button.style.setProperty('color','#0f1419','important');button.style.setProperty('border','1px solid #cfd9de','important');button.style.setProperty('min-height','36px','important');}}
-   if(panel){if(narrow){panel.style.setProperty('display',panel.classList.contains('gather-participants-open')?'block':'none','important');panel.style.setProperty('position','fixed','important');panel.style.setProperty('top','50px','important');panel.style.setProperty('right','8px','important');panel.style.setProperty('bottom','12px','important');panel.style.setProperty('left','auto','important');panel.style.setProperty('width','min(280px,calc(100vw - 16px))','important');panel.style.setProperty('max-width','calc(100vw - 16px)','important');panel.style.setProperty('height','auto','important');panel.style.setProperty('max-height','calc(100dvh - 70px)','important');panel.style.setProperty('overflow','auto','important');panel.style.setProperty('background','#fff','important');panel.style.setProperty('z-index','10030','important');panel.style.setProperty('box-shadow','0 8px 28px rgba(0,0,0,.22)','important');}
-   else{panel.style.removeProperty('position');panel.style.removeProperty('top');panel.style.removeProperty('right');panel.style.removeProperty('bottom');panel.style.removeProperty('left');panel.style.removeProperty('width');panel.style.removeProperty('max-width');panel.style.removeProperty('height');panel.style.removeProperty('max-height');panel.style.removeProperty('box-shadow');panel.style.setProperty('display','block','important');}}
- }catch(e){}}
- frame.addEventListener('load',()=>{adapt();try{frame.contentWindow.addEventListener('resize',adapt);}catch(e){}});
- window.addEventListener('resize',adapt);document.addEventListener('DOMContentLoaded',adapt);setTimeout(adapt,200);setTimeout(adapt,800);
- try{frame.contentDocument?.addEventListener('click',e=>{if(e.target?.closest?.('#gatherParticipantsButton'))setTimeout(adapt,0);},true);}catch(e){}
-})();
-</script>
-
-<style id="gather-participants-responsive-width-fix">
-@media(max-width:900px){#chatPageFrame.gather-chat-fixed-fullscreen{width:100vw!important;max-width:none!important}}
-</style>
-<script id="gather-participants-responsive-width-fix-script">
-(()=>{
- const frame=document.getElementById('chatPageFrame');
- if(!frame)return;
- let hookedDoc=null;
- function adapt(){
-  try{
-   const d=frame.contentDocument,w=frame.contentWindow;
-   if(!d||!w||!d.body)return;
-   const narrow=w.innerWidth<=900;
-   const main=d.getElementById('main');
-   const left=d.getElementById('left');
-   const chat=d.getElementById('chat');
-   const button=d.getElementById('gatherParticipantsButton');
-   const panel=d.getElementById('memberPanel');
-   if(!main||!left||!button||!panel)return;
-   if(narrow){
-    main.style.setProperty('display','grid','important');
-    main.style.setProperty('grid-template-columns','minmax(0,1fr)','important');
-    main.style.setProperty('grid-template-rows','minmax(0,1fr)','important');
-    main.style.setProperty('width','100%','important');
-    main.style.setProperty('max-width','none','important');
-    main.style.setProperty('min-width','0','important');
-    main.style.setProperty('height','calc(100dvh - 44px)','important');
-    main.style.setProperty('min-height','0','important');
-    main.style.setProperty('overflow','hidden','important');
-    left.style.setProperty('grid-column','1','important');
-    left.style.setProperty('grid-row','1','important');
-    left.style.setProperty('width','100%','important');
-    left.style.setProperty('min-width','0','important');
-    left.style.setProperty('height','100%','important');
-    left.style.setProperty('min-height','0','important');
-    left.style.setProperty('display','flex','important');
-    left.style.setProperty('flex-direction','column','important');
-    left.style.setProperty('overflow','hidden','important');
-    if(chat){chat.style.setProperty('width','100%','important');chat.style.setProperty('max-width','100%','important');chat.style.setProperty('min-width','0','important');chat.style.setProperty('flex','1 1 auto','important');chat.style.setProperty('min-height','0','important');}
-    button.removeAttribute('onclick');
-    button.style.setProperty('display','inline-flex','important');
-    button.style.setProperty('position','fixed','important');
-    button.style.setProperty('top','50px','important');
-    button.style.setProperty('right','8px','important');
-    button.style.setProperty('z-index','2147483001','important');
-    button.style.setProperty('align-items','center','important');
-    button.style.setProperty('justify-content','center','important');
-    button.style.setProperty('padding','8px 12px','important');
-    button.style.setProperty('min-height','38px','important');
-    button.style.setProperty('border-radius','20px','important');
-    button.style.setProperty('background','#fff','important');
-    button.style.setProperty('color','#0f1419','important');
-    button.style.setProperty('border','1px solid #cfd9de','important');
-    button.style.setProperty('box-shadow','0 2px 8px rgba(0,0,0,.15)','important');
-    panel.style.setProperty('display',panel.classList.contains('gather-participants-open')?'block':'none','important');
-    panel.style.setProperty('position','fixed','important');
-    panel.style.setProperty('top','94px','important');
-    panel.style.setProperty('right','8px','important');
-    panel.style.setProperty('bottom','8px','important');
-    panel.style.setProperty('left','auto','important');
-    panel.style.setProperty('grid-column','auto','important');
-    panel.style.setProperty('grid-row','auto','important');
-    panel.style.setProperty('width','min(280px,calc(100vw - 16px))','important');
-    panel.style.setProperty('max-width','calc(100vw - 16px)','important');
-    panel.style.setProperty('height','auto','important');
-    panel.style.setProperty('max-height','calc(100dvh - 110px)','important');
-    panel.style.setProperty('overflow','auto','important');
-    panel.style.setProperty('z-index','2147483000','important');
-    panel.style.setProperty('background','#fff','important');
-    panel.style.setProperty('border','1px solid #cfd9de','important');
-    panel.style.setProperty('border-radius','12px','important');
-    panel.style.setProperty('box-shadow','0 8px 28px rgba(0,0,0,.24)','important');
-    if(!button.__participantsHandler){
-      button.addEventListener('click',ev=>{
-       ev.preventDefault();ev.stopPropagation();
-       panel.classList.toggle('gather-participants-open');
-       panel.style.setProperty('display',panel.classList.contains('gather-participants-open')?'block':'none','important');
-      },true);
-      button.__participantsHandler=true;
-    }
-   }else{
-    button.style.removeProperty('position');button.style.removeProperty('top');button.style.removeProperty('right');button.style.removeProperty('z-index');button.style.removeProperty('box-shadow');
-    button.style.setProperty('display','none','important');
-    panel.style.removeProperty('position');panel.style.removeProperty('top');panel.style.removeProperty('right');panel.style.removeProperty('bottom');panel.style.removeProperty('left');panel.style.removeProperty('width');panel.style.removeProperty('max-width');panel.style.removeProperty('height');panel.style.removeProperty('max-height');panel.style.removeProperty('box-shadow');
-    panel.style.setProperty('display','block','important');
-    main.style.removeProperty('grid-template-columns');main.style.removeProperty('grid-template-rows');
-   }
-   if(hookedDoc!==d){hookedDoc=d;w.addEventListener('resize',adapt);}
-  }catch(e){/* iframeが再構築中なら次のresize/loadで再適用 */}
- }
- frame.addEventListener('load',()=>setTimeout(adapt,0));
- window.addEventListener('resize',adapt);
- document.addEventListener('DOMContentLoaded',adapt);
- setTimeout(adapt,100);setTimeout(adapt,500);setTimeout(adapt,1200);
-})();
-</script>
-
-
-<style id="gather-mobile-fullscreen-only-style">
-@media (max-width:760px){
-  #homeChatWidget{display:none!important;visibility:hidden!important;pointer-events:none!important}
-  #homeChatMobileNotice{display:block!important}
-  #chatPageFrame.gather-chat-fixed-fullscreen{display:block!important;visibility:visible!important}
-}
-</style>
-<script id="gather-mobile-fullscreen-only-controller">
-(()=>{
-  const mobile=()=>window.matchMedia('(max-width: 760px)').matches;
-  const get=id=>document.getElementById(id);
-  function openFull(){
-    if(!mobile())return false;
-    const open=window.__gatherOpenFullscreenChat;
-    if(typeof open==='function') open();
-    else {
-      const frame=get('chatPageFrame');
-      if(frame){frame.classList.add('gather-chat-fixed-fullscreen');frame.style.setProperty('position','fixed','important');frame.style.setProperty('inset','44px 0 0 0','important');frame.style.setProperty('width','100vw','important');frame.style.setProperty('height','calc(100dvh - 44px)','important');frame.style.setProperty('z-index','2147483000','important');}
-    }
-    return true;
+  const byId=id=>document.getElementById(id);
+  let frame=null, savedStyle=null, styleSaved=false, open=false, framePlaceholder=null, originalParent=null;
+  function patchChatInnerLayout(enabled){
+    try {
+      const d=frame?.contentDocument;
+      if(!d?.documentElement) return;
+      d.body?.classList.toggle('gather-fullscreen-chat',!!enabled);
+      let style=d.getElementById('gather-fullscreen-chat-layout-fix');
+      if(!style){style=d.createElement('style');style.id='gather-fullscreen-chat-layout-fix';(d.head||d.documentElement).appendChild(style);}
+      style.textContent=enabled?`#memberPanel:not(.gather-participants-open){display:none!important}
+      body.gather-fullscreen-chat{margin:0!important;padding:8px!important;height:100%!important;min-height:0!important;overflow:hidden!important;box-sizing:border-box!important}
+      body.gather-fullscreen-chat #main{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(210px,260px)!important;gap:12px!important;width:100%!important;max-width:none!important;height:calc(100dvh - 16px)!important;min-height:0!important;box-sizing:border-box!important;align-items:stretch!important;overflow:hidden!important}
+      body.gather-fullscreen-chat #left{display:flex!important;flex-direction:column!important;width:auto!important;max-width:none!important;min-width:0!important;height:100%!important;min-height:0!important;overflow:hidden!important}
+      body.gather-fullscreen-chat #users{flex:0 0 auto!important;max-height:100px!important;overflow:auto!important}
+      body.gather-fullscreen-chat #chat{flex:1 1 auto!important;min-height:0!important;height:auto!important;max-height:none!important;overflow:auto!important}
+      body.gather-fullscreen-chat #memberPanel{display:block!important;position:static!important;inset:auto!important;grid-column:2!important;grid-row:1!important;width:auto!important;min-width:0!important;max-width:none!important;height:100%!important;min-height:0!important;max-height:none!important;overflow:auto!important;box-sizing:border-box!important;margin:0!important;z-index:1!important}
+      body.gather-fullscreen-chat #gatherParticipantsButton{display:none!important}
+      body:not(.gather-fullscreen-chat) #memberPanel:not(.gather-participants-open){display:none!important}`:'';
+    } catch(e) { console.warn('チャット内部レイアウト:',e); }
   }
-  // On phones, every entry point to chat opens the full-screen view, never the home widget.
-  document.addEventListener('click',e=>{
-    if(!mobile())return;
-    const target=e.target?.closest?.('button,a,[role="button"]');
-    if(!target)return;
-    const inTop=!!target.closest('#chanproTopBar');
-    const inHomeWidget=!!target.closest('#homeChatWidget');
-    const label=((target.innerText||target.textContent||'')+' '+(target.title||'')).trim();
-    if(inHomeWidget || (inTop && /チャット/.test(label)) || /チャットへ移動/.test(label)){
-      e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();openFull();
-    }
-  },true);
-  // Some navigation paths call showPage('chat') directly instead of clicking the bar.
-  const wrapShowPage=()=>{
-    const old=window.showPage;
-    if(typeof old!=='function'||old.__mobileFullscreenOnly)return;
-    const wrapped=function(page,...args){
-      if(mobile() && String(page).toLowerCase()==='chat'){
-        openFull();
-        return;
+  function openChat(){
+    frame=byId('chatPageFrame'); if(!frame)return;
+    if(!styleSaved){savedStyle=frame.getAttribute('style');styleSaved=true;}
+    /* CSSのposition:fixedが親要素のtransform/overflow/stacking contextに妨げられないよう、
+       全画面中だけiframeをbody直下へ移動する。元の場所にはプレースホルダーを残す。 */
+    if(frame.parentElement!==document.body){
+      originalParent=frame.parentElement;
+      if(originalParent){
+        framePlaceholder=document.createElement('div');
+        framePlaceholder.id='gatherFullscreenChatPlaceholder';
+        framePlaceholder.setAttribute('aria-hidden','true');
+        const r=frame.getBoundingClientRect();
+        framePlaceholder.style.cssText='display:block;min-width:0;min-height:0;width:'+Math.max(0,r.width)+'px;height:'+Math.max(0,r.height)+'px;';
+        originalParent.insertBefore(framePlaceholder,frame);
       }
-      return old.call(this,page,...args);
-    };
-    wrapped.__mobileFullscreenOnly=true;
-    window.showPage=wrapped;
-  };
-  wrapShowPage();
-  document.addEventListener('DOMContentLoaded',wrapShowPage);
-  window.addEventListener('load',wrapShowPage);
-  window.addEventListener('resize',()=>{
-    if(mobile()){
-      const widget=get('homeChatWidget');
-      if(widget){widget.style.setProperty('display','none','important');widget.style.setProperty('visibility','hidden','important');widget.style.setProperty('pointer-events','none','important');}
+      document.body.appendChild(frame);
     }
+    open=true; window.__gatherFullscreenChatPinned=true;
+    frame.classList.add('gather-chat-fixed-fullscreen');
+    const top=matchMedia('(max-width:600px)').matches?42:44;
+    for(const [k,v] of Object.entries({position:'fixed',top:top+'px',left:'0',right:'0',bottom:'0',width:'100vw',height:`calc(100dvh - ${top}px)`,minWidth:'0',minHeight:'0',maxWidth:'none',display:'block',visibility:'visible',opacity:'1',pointerEvents:'auto',zIndex:'2147483000'})) frame.style.setProperty(k.replace(/[A-Z]/g,m=>'-'+m.toLowerCase()),v,'important');
+    for(const id of ['chanproTopBar','chanproTopReveal']){const b=byId(id);if(b){b.classList.add('gather-chat-bar-pinned');b.style.setProperty('transform','translateY(0)','important');}}
+    patchChatInnerLayout(true);
+  }
+  function closeChat(goHome=true){
+    window.__gatherFullscreenChatPinned=false; open=false;
+    frame=frame||byId('chatPageFrame');
+    if(frame){frame.classList.remove('gather-chat-fixed-fullscreen');if(savedStyle===null)frame.removeAttribute('style');else frame.setAttribute('style',savedStyle);patchChatInnerLayout(false);
+      /* 閉じるときはiframeを元のDOM位置へ戻し、ホーム側のレイアウトを復元する。 */
+      if(framePlaceholder&&framePlaceholder.parentNode){framePlaceholder.parentNode.insertBefore(frame,framePlaceholder);framePlaceholder.remove();}
+      else if(originalParent&&originalParent.isConnected&&frame.parentElement===document.body){originalParent.appendChild(frame);}
+    }
+    framePlaceholder=null;originalParent=null;
+    for(const id of ['chanproTopBar','chanproTopReveal']){const b=byId(id);if(b){b.classList.remove('gather-chat-bar-pinned');b.style.removeProperty('transform');}}
+    styleSaved=false;savedStyle=null;
+    if(goHome&&typeof window.showPage==='function'){try{window.showPage('home')}catch(e){console.warn('ホーム表示切替:',e)}}
+  }
+  window.__gatherOpenFullscreenChat=openChat;
+  window.__gatherCloseFullscreenChat=closeChat;
+  document.addEventListener('click',ev=>{
+    const b=ev.target?.closest?.('button'); if(!b)return;
+    const txt=(b.innerText||b.textContent||'').trim();
+    if(b.closest('#chanproTopBar')){
+      if(/チャット/.test(txt)){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();open?closeChat(false):openChat();return;}
+      if(/ホーム|投稿|chanpro-gather/.test(txt)&&open){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();closeChat(true);return;}
+    }
+    if(/チャットへ移動/.test(b.title||'')){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();openChat();}
+  },true);
+  document.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&open){ev.preventDefault();closeChat(true)}},true);
+  window.addEventListener('resize',()=>{if(!open)return;const f=byId('chatPageFrame');if(!f)return;const top=matchMedia('(max-width:600px)').matches?42:44;f.style.setProperty('top',top+'px','important');f.style.setProperty('height',`calc(100dvh - ${top}px)`,'important');},{passive:true});
+  const f=byId('chatPageFrame');if(f)f.addEventListener('load',()=>{if(open)patchChatInnerLayout(true)});
+})();
+</script>
+<script id=gather-device-fingerprint-scope-fix>"function"!=typeof window.getDeviceFingerprint&&(window.getDeviceFingerprint=async function(){const n="function"==typeof getDeviceInfo?getDeviceInfo():{userAgent:navigator.userAgent||"",platform:navigator.platform||"",language:navigator.language||""},t=JSON.stringify(n);let e="";if("function"==typeof sha256)e=await sha256(t);else{const n=await crypto.subtle.digest("SHA-256",(new TextEncoder).encode(t));e=Array.from(new Uint8Array(n)).map((n=>n.toString(16).padStart(2,"0"))).join("")}return{hash:e,info:n}})</script>
+<script id=gather-sidebar-more-items-final>(()=>{const e="gatherNavMoreButton",t="gatherNavMorePanel";function n(){document.getElementById(t)?.remove(),document.getElementById(e)?.setAttribute("aria-expanded","false")}function o(){const o=document.querySelector(".sidebar .nav");if(!o)return;o.querySelectorAll('[data-gather-nav-overflow="1"]').forEach((e=>{e.style.display="",e.removeAttribute("data-gather-nav-overflow")}));const a=[...o.querySelectorAll("button")].filter((t=>t.id!==e&&!t.classList.contains("hidden")&&"none"!==getComputedStyle(t).display));let r=document.getElementById(e);if(a.length<=8)return n(),r?.remove(),void a.forEach((e=>{e.style.display="",e.removeAttribute("data-gather-nav-overflow")}));const d=a.slice(8);d.forEach((e=>{e.dataset.gatherNavOverflow="1",e.style.display="none"})),r||(r=document.createElement("button"),r.type="button",r.id=e,r.className="secondary",r.textContent="＋ もっと表示",r.setAttribute("aria-expanded","false"),r.style.cssText="width:100%;margin-top:4px;text-align:left;",o.appendChild(r)),r.__gatherOverflowItems=d,r.dataset.ready||(r.dataset.ready="1",r.addEventListener("click",(e=>{if(e.preventDefault(),e.stopPropagation(),document.getElementById(t))return void n();const o=r.__gatherOverflowItems||[];if(!o.length)return;const a=document.createElement("div");a.id=t,a.setAttribute("role","dialog"),a.setAttribute("aria-label","その他のメニュー"),a.style.cssText="position:fixed;z-index:20050;background:#fff;color:#0f1419;border:1px solid #cfd9de;border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.22);width:min(300px,85vw);max-height:55vh;overflow:auto;padding:8px;box-sizing:border-box;";const d=r.getBoundingClientRect();a.style.left=Math.max(8,Math.min(d.left,window.innerWidth-308))+"px",a.style.bottom=Math.max(8,window.innerHeight-d.top+6)+"px";const i=document.createElement("table");i.style.cssText="width:100%;border-collapse:collapse;";const s=document.createElement("caption");s.textContent="その他のメニュー",s.style.cssText="text-align:left;font-weight:700;padding:8px;border-bottom:1px solid #e1e8ed;",i.appendChild(s),o.forEach((e=>{const t=document.createElement("tr");t.style.cssText="border-bottom:1px solid #eef1f3;cursor:pointer;";const o=document.createElement("td");o.style.cssText="padding:2px;width:100%;";const a=document.createElement("button");a.type="button",a.className="secondary",a.style.cssText="width:100%;text-align:left;background:transparent;color:#0f1419;border:0;padding:10px;border-radius:8px;";const r=e.querySelector("img");if(r){const e=r.cloneNode();e.style.cssText="width:22px;height:22px;object-fit:contain;vertical-align:middle;margin-right:10px;",a.appendChild(e)}const d=document.createElement("span");d.textContent=(e.innerText||e.textContent||"").trim().replace(/\s+/g," "),a.appendChild(d),a.addEventListener("click",(()=>{n(),e.click()})),o.appendChild(a),t.appendChild(o),i.appendChild(t)})),a.appendChild(i),document.body.appendChild(a),r.setAttribute("aria-expanded","true")})))}"loading"===document.readyState?document.addEventListener("DOMContentLoaded",o,{once:!0}):o();const a=document.querySelector(".sidebar .nav");a&&window.MutationObserver&&new MutationObserver((()=>{clearTimeout(window.__gatherNavMoreTimer),window.__gatherNavMoreTimer=setTimeout(o,80)})).observe(a,{childList:!0,subtree:!0,attributes:!0,attributeFilter:["class"]}),document.addEventListener("click",(e=>{e.target?.closest?.("#gatherNavMorePanel")||e.target?.closest?.("#gatherNavMoreButton")||n()})),document.addEventListener("keydown",(e=>{"Escape"===e.key&&n()})),window.addEventListener("resize",n)})()</script>
+<style id=chanpro-mobile-chat-final-fix>#homeChatMobileNotice{display:none;box-sizing:border-box;margin:12px 15px;padding:14px 16px;border:1px solid #cfd9de;border-radius:12px;background:#f7f9fa;color:#536471;font-size:14px;line-height:1.65}#homeChatMobileNotice strong{display:block;color:#0f1419;margin-bottom:4px;font-size:15px}@media(max-width:760px){#homeChatMobileNotice{display:block}#homeChatWidget{display:none!important}.app.chanpro-chat-wide-open #homeChatWidget,.app.chat-fullscreen #homeChatWidget,.app.chat-mobile-open #homeChatWidget{display:flex!important}}</style>
+<script id=chanpro-mobile-chat-final-controller>(()=>{const t=t=>document.getElementById(t);function n(){const n=t("homePage");if(!n||t("homeChatMobileNotice"))return;const e=document.createElement("div");e.id="homeChatMobileNotice",e.setAttribute("role","status"),e.innerHTML="<strong>ホーム画面のチャットについて</strong>スマートフォンではホーム画面のチャットは使えません。全画面チャットを開いてご利用ください。";const o=n.querySelector(".pageHeader");o&&o.parentNode?o.insertAdjacentElement("afterend",e):n.insertBefore(e,n.firstChild)}function e(){const n=t("chatPageFrame");if(n)try{const t=n.contentDocument;if(!t||!t.documentElement)return;const e=t.head||t.documentElement;let o=t.getElementById("chanpro-mobile-chat-layout-final");o||(o=t.createElement("style"),o.id="chanpro-mobile-chat-layout-final",e.appendChild(o)),o.textContent="\n        /* 幅が狭い場合は参加者欄を重ねて表示し、チャット欄を優先 */\n        @media(max-width:900px){\n          body.gather-fullscreen-chat #main{\n            display:grid!important;\n            grid-template-columns:minmax(0,1fr)!important;\n            gap:8px!important;\n            width:100%!important;\n            max-width:none!important;\n            height:calc(100dvh - 16px)!important;\n            min-height:0!important;\n            overflow:hidden!important;\n          }\n          body.gather-fullscreen-chat #left{\n            grid-column:1!important;grid-row:1!important;\n            width:100%!important;max-width:none!important;min-width:0!important;\n            height:100%!important;min-height:0!important;\n          }\n          body.gather-fullscreen-chat #memberPanel{\n            display:none!important;\n            position:fixed!important;top:82px!important;right:10px!important;bottom:72px!important;left:auto!important;\n            width:min(280px,calc(100vw - 20px))!important;max-width:calc(100vw - 20px)!important;\n            height:auto!important;max-height:none!important;overflow:auto!important;\n            background:#fff!important;border:1px solid #cfd9de!important;border-radius:12px!important;\n            box-shadow:0 8px 28px rgba(0,0,0,.22)!important;z-index:10030!important;\n          }\n          body.gather-fullscreen-chat #memberPanel.gather-participants-open{display:block!important}\n          body.gather-fullscreen-chat #gatherParticipantsButton{\n            display:inline-flex!important;position:fixed!important;top:49px!important;right:10px!important;\n            z-index:10035!important;max-width:calc(100vw - 20px)!important;\n            min-height:36px!important;padding:7px 12px!important;border-radius:20px!important;\n            background:#fff!important;color:#0f1419!important;border:1px solid #cfd9de!important;\n            box-shadow:0 2px 8px rgba(0,0,0,.12)!important;\n          }\n          body.gather-fullscreen-chat #chat{\n            min-width:0!important;width:100%!important;max-width:100%!important;\n            height:auto!important;max-height:none!important;min-height:0!important;overflow:auto!important;\n          }\n        }\n        @media(max-width:500px){\n          body.gather-fullscreen-chat{padding:5px!important}\n          body.gather-fullscreen-chat #main{height:calc(100dvh - 10px)!important}\n          body.gather-fullscreen-chat #gatherParticipantsButton{top:47px!important;right:7px!important}\n          body.gather-fullscreen-chat #memberPanel{top:82px!important;right:7px!important;bottom:68px!important}\n        }\n      "}catch(t){}}function o(){n(),e()}document.addEventListener("DOMContentLoaded",(()=>{o();t("chatPageFrame")?.addEventListener("load",e),window.addEventListener("resize",e),setTimeout(o,250),setTimeout(o,900)})),window.addEventListener("load",o);const a=window.afterLogin;if("function"==typeof a&&!a.__chanproMobileChatNoticeWrapped){const t=async function(...t){const n=await a.apply(this,t);return o(),n};t.__chanproMobileChatNoticeWrapped=!0,window.afterLogin=t}const i=new MutationObserver((()=>{n()}));document.documentElement&&i.observe(document.documentElement,{childList:!0,subtree:!0})})()</script>
+<style id=gather-chat-exclusive-screen-style>body.gather-chat-exclusive-screen,html.gather-chat-exclusive-screen{width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important;background:#fff!important}body.gather-chat-exclusive-screen #chatPageFrame.gather-chat-fixed-fullscreen{position:fixed!important;inset:44px 0 0 0!important;width:100vw!important;height:calc(100dvh - 44px)!important;min-width:0!important;min-height:0!important;max-width:none!important;max-height:none!important;margin:0!important;padding:0!important;border:0!important;display:block!important;visibility:visible!important;z-index:2147483000!important;background:#fff!important}#chanproTopBar.gather-chat-bar-pinned{position:fixed!important;top:0!important;left:0!important;right:0!important;width:100%!important;transform:translateY(0)!important;z-index:2147483002!important}#chanproTopReveal.gather-chat-bar-pinned{z-index:2147483003!important}</style>
+<script id="gather-chat-exclusive-screen-controller">
+// Intentionally disabled: fullscreen chat must not hide/restructure the rest of the page,
+// and duplicate observers/wrappers caused unstable open/close behavior.
+
+</script>
+<script id=gather-responsive-participants-no-reconnect>(()=>{const t=document.getElementById("chatPageFrame");if(t){t.addEventListener("load",(()=>{e();try{t.contentWindow.addEventListener("resize",e)}catch(t){}})),window.addEventListener("resize",e),document.addEventListener("DOMContentLoaded",e),setTimeout(e,200),setTimeout(e,800);try{t.contentDocument?.addEventListener("click",(t=>{t.target?.closest?.("#gatherParticipantsButton")&&setTimeout(e,0)}),!0)}catch(t){}}function e(){try{const e=t.contentWindow,r=t.contentDocument;if(!e||!r)return;const o=e.innerWidth<=900,s=r.getElementById("gatherParticipantsButton"),n=r.getElementById("memberPanel");s&&(s.style.setProperty("display",o?"inline-flex":"none","important"),o&&(s.style.setProperty("position","fixed","important"),s.style.setProperty("top","7px","important"),s.style.setProperty("right","8px","important"),s.style.setProperty("z-index","10035","important"),s.style.setProperty("background","#fff","important"),s.style.setProperty("color","#0f1419","important"),s.style.setProperty("border","1px solid #cfd9de","important"),s.style.setProperty("min-height","36px","important"))),n&&(o?(n.style.setProperty("display",n.classList.contains("gather-participants-open")?"block":"none","important"),n.style.setProperty("position","fixed","important"),n.style.setProperty("top","50px","important"),n.style.setProperty("right","8px","important"),n.style.setProperty("bottom","12px","important"),n.style.setProperty("left","auto","important"),n.style.setProperty("width","min(280px,calc(100vw - 16px))","important"),n.style.setProperty("max-width","calc(100vw - 16px)","important"),n.style.setProperty("height","auto","important"),n.style.setProperty("max-height","calc(100dvh - 70px)","important"),n.style.setProperty("overflow","auto","important"),n.style.setProperty("background","#fff","important"),n.style.setProperty("z-index","10030","important"),n.style.setProperty("box-shadow","0 8px 28px rgba(0,0,0,.22)","important")):(n.style.removeProperty("position"),n.style.removeProperty("top"),n.style.removeProperty("right"),n.style.removeProperty("bottom"),n.style.removeProperty("left"),n.style.removeProperty("width"),n.style.removeProperty("max-width"),n.style.removeProperty("height"),n.style.removeProperty("max-height"),n.style.removeProperty("box-shadow"),n.style.setProperty("display","block","important")))}catch(t){}}})()</script>
+<style id=gather-participants-responsive-width-fix>@media(max-width:900px){#chatPageFrame.gather-chat-fixed-fullscreen{width:100vw!important;max-width:none!important}}</style>
+<script id=gather-participants-responsive-width-fix-script>(()=>{const t=document.getElementById("chatPageFrame");if(!t)return;let e=null;function r(){try{const o=t.contentDocument,p=t.contentWindow;if(!o||!p||!o.body)return;const s=p.innerWidth<=900,i=o.getElementById("main"),y=o.getElementById("left"),n=o.getElementById("chat"),a=o.getElementById("gatherParticipantsButton"),l=o.getElementById("memberPanel");if(!(i&&y&&a&&l))return;s?(i.style.setProperty("display","grid","important"),i.style.setProperty("grid-template-columns","minmax(0,1fr)","important"),i.style.setProperty("grid-template-rows","minmax(0,1fr)","important"),i.style.setProperty("width","100%","important"),i.style.setProperty("max-width","none","important"),i.style.setProperty("min-width","0","important"),i.style.setProperty("height","calc(100dvh - 44px)","important"),i.style.setProperty("min-height","0","important"),i.style.setProperty("overflow","hidden","important"),y.style.setProperty("grid-column","1","important"),y.style.setProperty("grid-row","1","important"),y.style.setProperty("width","100%","important"),y.style.setProperty("min-width","0","important"),y.style.setProperty("height","100%","important"),y.style.setProperty("min-height","0","important"),y.style.setProperty("display","flex","important"),y.style.setProperty("flex-direction","column","important"),y.style.setProperty("overflow","hidden","important"),n&&(n.style.setProperty("width","100%","important"),n.style.setProperty("max-width","100%","important"),n.style.setProperty("min-width","0","important"),n.style.setProperty("flex","1 1 auto","important"),n.style.setProperty("min-height","0","important")),a.removeAttribute("onclick"),a.style.setProperty("display","inline-flex","important"),a.style.setProperty("position","fixed","important"),a.style.setProperty("top","50px","important"),a.style.setProperty("right","8px","important"),a.style.setProperty("z-index","2147483001","important"),a.style.setProperty("align-items","center","important"),a.style.setProperty("justify-content","center","important"),a.style.setProperty("padding","8px 12px","important"),a.style.setProperty("min-height","38px","important"),a.style.setProperty("border-radius","20px","important"),a.style.setProperty("background","#fff","important"),a.style.setProperty("color","#0f1419","important"),a.style.setProperty("border","1px solid #cfd9de","important"),a.style.setProperty("box-shadow","0 2px 8px rgba(0,0,0,.15)","important"),l.style.setProperty("display",l.classList.contains("gather-participants-open")?"block":"none","important"),l.style.setProperty("position","fixed","important"),l.style.setProperty("top","94px","important"),l.style.setProperty("right","8px","important"),l.style.setProperty("bottom","8px","important"),l.style.setProperty("left","auto","important"),l.style.setProperty("grid-column","auto","important"),l.style.setProperty("grid-row","auto","important"),l.style.setProperty("width","min(280px,calc(100vw - 16px))","important"),l.style.setProperty("max-width","calc(100vw - 16px)","important"),l.style.setProperty("height","auto","important"),l.style.setProperty("max-height","calc(100dvh - 110px)","important"),l.style.setProperty("overflow","auto","important"),l.style.setProperty("z-index","2147483000","important"),l.style.setProperty("background","#fff","important"),l.style.setProperty("border","1px solid #cfd9de","important"),l.style.setProperty("border-radius","12px","important"),l.style.setProperty("box-shadow","0 8px 28px rgba(0,0,0,.24)","important"),a.__participantsHandler||(a.addEventListener("click",(t=>{t.preventDefault(),t.stopPropagation(),l.classList.toggle("gather-participants-open"),l.style.setProperty("display",l.classList.contains("gather-participants-open")?"block":"none","important")}),!0),a.__participantsHandler=!0)):(a.style.removeProperty("position"),a.style.removeProperty("top"),a.style.removeProperty("right"),a.style.removeProperty("z-index"),a.style.removeProperty("box-shadow"),a.style.setProperty("display","none","important"),l.style.removeProperty("position"),l.style.removeProperty("top"),l.style.removeProperty("right"),l.style.removeProperty("bottom"),l.style.removeProperty("left"),l.style.removeProperty("width"),l.style.removeProperty("max-width"),l.style.removeProperty("height"),l.style.removeProperty("max-height"),l.style.removeProperty("box-shadow"),l.style.setProperty("display","block","important"),i.style.removeProperty("grid-template-columns"),i.style.removeProperty("grid-template-rows")),e!==o&&(e=o,p.addEventListener("resize",r))}catch(t){}}t.addEventListener("load",(()=>setTimeout(r,0))),window.addEventListener("resize",r),document.addEventListener("DOMContentLoaded",r),setTimeout(r,100),setTimeout(r,500),setTimeout(r,1200)})()</script>
+<style id=gather-mobile-fullscreen-only-style>@media (max-width:760px){#homeChatWidget{display:none!important;visibility:hidden!important;pointer-events:none!important}#homeChatMobileNotice{display:block!important}#chatPageFrame.gather-chat-fixed-fullscreen{display:block!important;visibility:visible!important}}</style>
+<script id=gather-mobile-fullscreen-only-controller>(()=>{const t=()=>window.matchMedia("(max-width: 760px)").matches,e=t=>document.getElementById(t);function n(){if(!t())return!1;const n=window.__gatherOpenFullscreenChat;if("function"==typeof n)n();else{const t=e("chatPageFrame");t&&(t.classList.add("gather-chat-fixed-fullscreen"),t.style.setProperty("position","fixed","important"),t.style.setProperty("inset","44px 0 0 0","important"),t.style.setProperty("width","100vw","important"),t.style.setProperty("height","calc(100dvh - 44px)","important"),t.style.setProperty("z-index","2147483000","important"))}return!0}document.addEventListener("click",(e=>{if(!t())return;const o=e.target?.closest?.('button,a,[role="button"]');if(!o)return;const i=!!o.closest("#chanproTopBar"),r=!!o.closest("#homeChatWidget"),s=((o.innerText||o.textContent||"")+" "+(o.title||"")).trim();(r||i&&/チャット/.test(s)||/チャットへ移動/.test(s))&&(e.preventDefault(),e.stopPropagation(),e.stopImmediatePropagation(),n())}),!0);const o=()=>{const e=window.showPage;if("function"!=typeof e||e.__mobileFullscreenOnly)return;const o=function(o,...i){if(!t()||"chat"!==String(o).toLowerCase())return e.call(this,o,...i);n()};o.__mobileFullscreenOnly=!0,window.showPage=o};o(),document.addEventListener("DOMContentLoaded",o),window.addEventListener("load",o),window.addEventListener("resize",(()=>{if(t()){const t=e("homeChatWidget");t&&(t.style.setProperty("display","none","important"),t.style.setProperty("visibility","hidden","important"),t.style.setProperty("pointer-events","none","important"))}}))})()</script>
+
+
+<style id="gather-home-chat-responsive-final">
+/* ホームチャットは広いPC画面のみ表示。スマートフォンではホーム側に出さない */
+#homeChatWidget { min-width: 0 !important; }
+@media (max-width: 1099px) {
+  #homeChatWidget { display: none !important; visibility: hidden !important; pointer-events: none !important; }
+  #homeChatResizeHandle { display: none !important; }
+}
+@media (min-width: 1100px) {
+  #app:not(.chanpro-chat-wide-open) #homeChatWidget:not(.disabled) {
+    visibility: visible;
+  }
+}
+@media (max-width: 760px) {
+  #homeChatWidget,
+  #homeChatSlot #homeChatWidget {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+}
+</style>
+<script id="gather-home-chat-responsive-controller-final">
+(() => {
+  const mobileQuery = window.matchMedia("(max-width: 760px)");
+  const homeChatQuery = window.matchMedia("(min-width: 1100px)");
+  const byId = id => document.getElementById(id);
+  const app = () => byId("app") || document.querySelector(".app");
+  const frame = () => byId("chatPageFrame");
+  const widget = () => byId("homeChatWidget");
+  const settings = () => {
+    const user = window.currentUser || (typeof currentUser !== "undefined" ? currentUser : null);
+    return user && user.settings && typeof user.settings === "object" ? user.settings : {};
+  };
+  const isFullChat = () => {
+    const a = app(), f = frame();
+    return !!(
+      a?.classList.contains("chanpro-chat-wide-open") ||
+      a?.classList.contains("chat-fullscreen") ||
+      document.body.classList.contains("gather-chat-overlay-open") ||
+      f?.classList.contains("gather-chat-fixed-fullscreen")
+    );
+  };
+
+  function applyResponsiveHomeChat() {
+    const w = widget();
+    if (!w) return;
+    const canShowHomeChat = homeChatQuery.matches && settings().home_chat_enabled !== false && !isFullChat();
+    if (mobileQuery.matches || !homeChatQuery.matches) {
+      w.style.setProperty("display", "none", "important");
+      w.style.setProperty("visibility", "hidden", "important");
+      w.style.setProperty("pointer-events", "none", "important");
+    } else {
+      w.style.removeProperty("visibility");
+      w.style.removeProperty("pointer-events");
+      w.style.setProperty("display", canShowHomeChat ? "flex" : "none", "important");
+    }
+    const a = app();
+    if (a) a.classList.toggle("gather-responsive-home-chat-hidden", !canShowHomeChat);
+    gateChatAutoStart();
+  }
+
+  function gateChatAutoStart() {
+    const f = frame();
+    if (!f) return;
+    try {
+      const win = f.contentWindow;
+      if (!win) return;
+      const blockHomeAutoStart = !homeChatQuery.matches && !isFullChat();
+      // スマホ・狭い画面ではホームチャットの自動接続だけを止める。
+      // 全画面チャットを明示的に開いた場合は通常どおり利用可能。
+      win.__gatherChatDisabled = blockHomeAutoStart;
+      if (typeof win.startChat === "function" && !win.startChat.__gatherResponsiveGate) {
+        const original = win.startChat;
+        const wrapped = function(...args) {
+          if (!homeChatQuery.matches && !isFullChat()) {
+            win.__gatherChatDisabled = true;
+            return Promise.resolve(false);
+          }
+          win.__gatherChatDisabled = false;
+          return original.apply(this, args);
+        };
+        wrapped.__gatherResponsiveGate = true;
+        win.startChat = wrapped;
+      }
+      if (typeof win.syncChanProSession === "function" && !win.syncChanProSession.__gatherResponsiveGate) {
+        const originalSync = win.syncChanProSession;
+        const wrappedSync = function(...args) {
+          win.__gatherChatDisabled = !homeChatQuery.matches && !isFullChat();
+          return originalSync.apply(this, args);
+        };
+        wrappedSync.__gatherResponsiveGate = true;
+        win.syncChanProSession = wrappedSync;
+      }
+    } catch (err) {
+      // iframe がまだ準備中なら load イベントで再試行する。
+    }
+  }
+
+  function install() {
+    const f = frame();
+    if (f && !f.dataset.gatherResponsiveGateInstalled) {
+      f.dataset.gatherResponsiveGateInstalled = "1";
+      f.addEventListener("load", () => {
+        gateChatAutoStart();
+        applyResponsiveHomeChat();
+      });
+    }
+    applyResponsiveHomeChat();
+  }
+
+  document.addEventListener("DOMContentLoaded", install);
+  window.addEventListener("load", install);
+  window.addEventListener("resize", install, { passive: true });
+  if (typeof mobileQuery.addEventListener === "function") {
+    mobileQuery.addEventListener("change", install);
+    homeChatQuery.addEventListener("change", install);
+  } else {
+    mobileQuery.addListener(install);
+    homeChatQuery.addListener(install);
+  }
+
+  // 既存の設定保存・画面切り替え後にもレイアウトを再適用。
+  document.addEventListener("change", event => {
+    if (event.target?.id === "accountHomeChatEnabled") setTimeout(install, 0);
   });
+  document.addEventListener("click", event => {
+    if (event.target?.closest?.("#chanproTopBar, .nav, #homeChatWidget")) {
+      setTimeout(install, 80);
+    }
+  }, true);
+  install();
+})();
+</script>
+
+
+<script id="chanpro-vercel-secure-bridge">
+(() => {
+  const secureApiBase = "https:" + "//" + "chanpro-gather" + ".vercel.app" + "/api/secure";
+  window.__gatherSessionToken = window.__gatherSessionToken || ""; // メモリーのみ。localStorageには保存しない
+  window.__chanproSecureRequest = async function(action, payload = {}) {
+    const isAuth = action === "login" || action === "register";
+    const creds = isAuth && typeof window.__gatherSecureCredentials === "function"
+      ? window.__gatherSecureCredentials() : {};
+    const body = { action, payload: { ...payload } };
+    if (isAuth) {
+      body.username = payload.username || creds.username || "";
+      body.password = payload.password || creds.password || "";
+      if (payload.deviceHash) body.deviceHash = payload.deviceHash;
+      else if (typeof window.getDeviceHash === "function") {
+        try { body.deviceHash = await window.getDeviceHash(); } catch (_) {}
+      }
+    }
+    delete body.payload.username;
+    delete body.payload.password;
+    const headers = { "Content-Type": "application/json" };
+    if (!isAuth) {
+      if (!window.__gatherSessionToken) throw new Error("ログイン状態が切れました。再ログインしてください");
+      headers.Authorization = "Bearer " + window.__gatherSessionToken;
+    }
+    const response = await fetch(secureApiBase, {
+      method: "POST", headers, body: JSON.stringify(body), cache: "no-store"
+    });
+    let result;
+    try { result = await response.json(); } catch (_) { result = {}; }
+    if ((response.status === 401) && !isAuth) {
+      window.__gatherSessionToken = "";
+      throw new Error(result.error || "セッションの有効期限が切れました。再ログインしてください");
+    }
+    if (!response.ok || result.error) throw new Error(result.error || "Vercel APIへの接続に失敗しました");
+    if (isAuth && result.token) window.__gatherSessionToken = result.token;
+    return result;
+  };
+
+  // Login is verified by Vercel. Client-provided role/verified flags are never trusted.
+  window.login = async function() {
+    const username = document.getElementById("loginName")?.value?.trim() || "";
+    const password = document.getElementById("loginPassword")?.value || "";
+    const errorEl = document.getElementById("loginError");
+    const statusEl = document.getElementById("loginStatus");
+    const loginButton = document.getElementById("loginButton");
+    if (!username || !password) { if (errorEl) errorEl.textContent = "ユーザー名とパスワードを入力してください"; return; }
+    if (statusEl) { statusEl.textContent = "ログイン中..."; statusEl.style.display = "block"; }
+    if (loginButton) { loginButton.disabled = true; }
+    if (errorEl) errorEl.textContent = "";
+    try {
+      const deviceHash = typeof window.getDeviceHash === "function" ? await window.getDeviceHash() : "";
+      const result = await window.__chanproSecureRequest("login", { username, password, deviceHash });
+      if (!result.user) throw new Error("ログイン情報を取得できませんでした");
+      // Top-level let variables are lexical bindings; assigning window.currentUser alone
+      // leaves the app's currentUser null and breaks all ordinary Supabase reads.
+      currentUser = result.user;
+      currentPasswordHash = typeof hashPassword === "function" ? await hashPassword(password) : "";
+      currentRawPassword = "";
+      serverAdmin = !!result.isAdmin;
+      window.currentUser = currentUser;
+      window.currentPasswordHash = currentPasswordHash;
+      window.currentRawPassword = currentRawPassword;
+      window.serverAdmin = serverAdmin;
+      if (typeof cache !== "undefined" && cache.users) cache.users.set(result.user.id, result.user);
+      if (typeof safeSet === "function") safeSet("chanpro_post_user", result.user.id);
+      if (errorEl) errorEl.textContent = "";
+      if (typeof afterLogin === "function") {
+        try { await afterLogin(); }
+        catch (_) { if (errorEl) errorEl.textContent = "ログインしました。一部の表示を読み込めませんでした。画面を更新してください。"; }
+      }
+    } catch (error) {
+      console.error("Vercel login failed:", error);
+      if (errorEl) errorEl.textContent = error.message || "ログインに失敗しました";
+    } finally {
+      if (statusEl) statusEl.style.display = "none";
+      if (loginButton) { loginButton.disabled = false; }
+    }
+  };
+
+  window.createAccount = async function() {
+    const username = document.getElementById("loginName")?.value?.trim() || "";
+    const password = document.getElementById("loginPassword")?.value || "";
+    const errorEl = document.getElementById("loginError");
+    if (username.length < 2) { if (errorEl) errorEl.textContent = "ユーザー名は2文字以上にしてください"; return; }
+    if (password.length < 8) { if (errorEl) errorEl.textContent = "パスワードは8文字以上にしてください"; return; }
+    try {
+      const deviceHash = typeof window.getDeviceHash === "function" ? await window.getDeviceHash() : "";
+      const result = await window.__chanproSecureRequest("register", { username, password, deviceHash });
+      if (!result.user) throw new Error("アカウントを作成できませんでした");
+      currentUser = result.user;
+      currentRawPassword = "";
+      currentPasswordHash = typeof hashPassword === "function" ? await hashPassword(password) : "";
+      serverAdmin = false;
+      window.currentUser = currentUser;
+      window.currentRawPassword = currentRawPassword;
+      window.currentPasswordHash = currentPasswordHash;
+      window.serverAdmin = serverAdmin;
+      if (typeof cache !== "undefined" && cache.users) cache.users.set(result.user.id, result.user);
+      if (typeof safeSet === "function") safeSet("chanpro_post_user", result.user.id);
+      if (errorEl) errorEl.textContent = "";
+      if (typeof afterLogin === "function") {
+        try { await afterLogin(); }
+        catch (_) { if (errorEl) errorEl.textContent = "アカウントを作成しました。一部の表示を読み込めませんでした。画面を更新してください。"; }
+      }
+    } catch (error) {
+      console.error("Vercel registration failed:", error);
+      if (errorEl) errorEl.textContent = error.message || "アカウント作成に失敗しました";
+    }
+  };
+
+  // Existing gatherSecureApi callers are routed through Vercel rather than direct table mutations.
+  window.gatherSecureApi = async function(action, payload = {}) {
+    const map = {
+      "user-update":"user-update", "user-settings":"user-settings",
+      "post-pin":"post-pin", "post-delete":"post-delete", "post-view":"post-view",
+      "dm-list":"dm-list", "dm-send":"dm-send", "account-delete":"account-delete",
+      "admin-user-update":"admin-user-update", "ban":"ban", "stamp-purchase":"stamp-purchase",
+      "transfer-points":"transfer-points", "chat-points":"chat-points",
+      "user-login-streak":"user-login-streak", "weekly-points":"weekly-points",
+      "report":"report", "image-register":"image-register"
+    };
+    if (!map[action]) throw new Error("Vercel API未対応の操作です: " + action);
+    const result = await window.__chanproSecureRequest(map[action], payload);
+    if (result.user && window.currentUser) {
+      currentUser = { ...currentUser, ...result.user };
+      window.currentUser = currentUser;
+      currentPasswordHash = "";
+      window.currentPasswordHash = "";
+      if (payload.newPassword) { currentRawPassword = String(payload.newPassword); window.currentRawPassword = currentRawPassword; }
+    }
+    if (result.settings && currentUser) { currentUser.settings = { ...(currentUser.settings || {}), ...result.settings }; window.currentUser = currentUser; }
+    return result;
+  };
+})();
+</script>
+
+<style id="gather-fullscreen-chat-resize-input-fix">
+/* 全画面チャットは画面幅が変わっても iframe を隠さず、入力欄を操作可能に保つ */
+#chatPageFrame.gather-chat-fixed-fullscreen{display:block!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;position:fixed!important;left:0!important;right:0!important;top:44px!important;bottom:0!important;width:100vw!important;height:calc(100dvh - 44px)!important;max-width:none!important;min-width:0!important;min-height:0!important;z-index:2147483000!important;border:0!important}
+@media(max-width:600px){#chatPageFrame.gather-chat-fixed-fullscreen{top:42px!important;height:calc(100dvh - 42px)!important}}
+</style>
+<script id="gather-fullscreen-chat-resize-input-fix-script">
+(()=>{
+ const frame=()=>document.getElementById('chatPageFrame');
+ const active=()=>document.body.classList.contains('gather-chat-overlay-open')||frame()?.classList.contains('gather-chat-fixed-fullscreen');
+ let scheduled=false;
+ function apply(){
+   scheduled=false;
+   const f=frame(); if(!f||!active()) return;
+   f.classList.add('gather-chat-fixed-fullscreen');
+   const mobile=window.matchMedia('(max-width:760px)').matches;
+   Object.entries({position:'fixed',left:'0',right:'0',top:window.matchMedia('(max-width:600px)').matches?'42px':'44px',bottom:'0',width:'100vw',height:`calc(100dvh - ${window.matchMedia('(max-width:600px)').matches?'42px':'44px'})`,maxWidth:'none',minWidth:'0',minHeight:'0',display:'block',visibility:'visible',opacity:'1',pointerEvents:'auto',zIndex:'2147483000',border:'0',margin:'0',padding:'0'}).forEach(([k,v])=>f.style.setProperty(k.replace(/[A-Z]/g,m=>'-'+m.toLowerCase()),v,'important'));
+   try{
+     const d=f.contentDocument; if(!d?.documentElement||!d.body)return;
+     let st=d.getElementById('gather-final-responsive-chat-input-fix');
+     if(!st){st=d.createElement('style');st.id='gather-final-responsive-chat-input-fix';(d.head||d.documentElement).appendChild(st)}
+     st.textContent=`
+       html,body{width:100%!important;max-width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;margin:0!important;overflow:hidden!important;box-sizing:border-box!important}
+       body.gather-fullscreen-chat #main{display:grid!important;grid-template-columns:${mobile?'minmax(0,1fr)':'minmax(0,1fr) minmax(0,260px)'}!important;grid-template-rows:minmax(0,1fr)!important;gap:8px!important;width:100%!important;max-width:none!important;height:100%!important;min-height:0!important;overflow:hidden!important;box-sizing:border-box!important}
+       body.gather-fullscreen-chat #left{grid-column:1!important;grid-row:1!important;display:flex!important;flex-direction:column!important;width:100%!important;max-width:none!important;min-width:0!important;height:100%!important;min-height:0!important;overflow:hidden!important}
+       body.gather-fullscreen-chat #chat{flex:1 1 auto!important;min-width:0!important;min-height:0!important;width:100%!important;max-width:100%!important;overflow:auto!important}
+       body.gather-fullscreen-chat #memberPanel{${mobile?'display:none!important;':'display:block!important;grid-column:2!important;grid-row:1!important;'}min-width:0!important;max-width:100%!important;overflow:auto!important}
+       body.gather-fullscreen-chat #memberPanel.gather-participants-open{display:block!important;position:fixed!important;top:94px!important;right:8px!important;bottom:8px!important;left:auto!important;width:min(280px,calc(100vw - 16px))!important;height:auto!important;max-height:calc(100dvh - 110px)!important;z-index:2147483001!important;background:#fff!important;overflow:auto!important}
+       body.gather-fullscreen-chat input,body.gather-fullscreen-chat textarea,body.gather-fullscreen-chat [contenteditable=true]{pointer-events:auto!important;user-select:text!important;-webkit-user-select:text!important;position:relative!important;z-index:5!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important}
+       body.gather-fullscreen-chat button{pointer-events:auto!important}
+     `;
+   }catch(e){console.warn('チャット幅変更時の補正:',e)}
+ }
+ function schedule(){if(scheduled)return;scheduled=true;requestAnimationFrame(apply)}
+ window.addEventListener('resize',schedule,{passive:true});
+ window.addEventListener('orientationchange',()=>setTimeout(schedule,80),{passive:true});
+ document.addEventListener('DOMContentLoaded',schedule);window.addEventListener('load',schedule);
+ const f=frame(); if(f)f.addEventListener('load',()=>setTimeout(schedule,30));
+ const mo=new MutationObserver(schedule);mo.observe(document.body,{attributes:true,attributeFilter:['class']});
+ const oldOpen=window.__gatherOpenFullscreenChat;
+ if(typeof oldOpen==='function'&&!oldOpen.__resizeInputFix){const wrapped=function(...args){const result=oldOpen.apply(this,args);schedule();setTimeout(schedule,80);setTimeout(schedule,300);return result};wrapped.__resizeInputFix=true;window.__gatherOpenFullscreenChat=wrapped}
+ const oldClose=window.__gatherCloseFullscreenChat;
+ if(typeof oldClose==='function'&&!oldClose.__resizeInputFix){const wrapped=function(...args){return oldClose.apply(this,args)};wrapped.__resizeInputFix=true;window.__gatherCloseFullscreenChat=wrapped}
+ setTimeout(schedule,0);setTimeout(schedule,250);setTimeout(schedule,900);
+})();
+</script>
+
+<script id="gather-session-preview-and-responsive-final-fix">
+(() => {
+  // HTMLプログラムのコード表示はIDマップの登録タイミングに依存せず、描画時のコードを直接渡す。
+  window.openProgramPostCode = function(code) {
+    const source = String(code || "");
+    const html = '<h2>💻 HTMLプログラム</h2>' +
+      '<label for="programPostCodeView">コード</label>' +
+      '<textarea id="programPostCodeView" readonly rows="12" style="width:100%;font-family:monospace;white-space:pre;overflow:auto"></textarea>' +
+      '<h3>プレビュー</h3><iframe id="programPostPreviewFrame" title="HTMLプレビュー" sandbox="allow-scripts" style="width:100%;height: min(55vh,520px);min-height:280px;border:1px solid #ddd;border-radius:10px;background:#fff"></iframe>' +
+      '<div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:10px">' +
+      '<button type="button" class="secondary" id="programOpenBlobButton">実際のページで見てみる</button>' +
+      '<button type="button" class="primary" onclick="closeModal()">閉じる</button></div>';
+    if (typeof window.openModal === "function") window.openModal(html);
+    else if (typeof openModal === "function") openModal(html);
+    const textarea = document.getElementById("programPostCodeView");
+    const frame = document.getElementById("programPostPreviewFrame");
+    const button = document.getElementById("programOpenBlobButton");
+    if (textarea) textarea.value = source;
+    if (frame) frame.srcdoc = typeof programHtmlWithCurrentUser === "function" ? programHtmlWithCurrentUser(source) : source;
+    if (button) button.addEventListener("click", () => window.openProgramPageBlob(source));
+  };
+  window.openProgramPageBlob = function(code) {
+    const source = typeof programHtmlWithCurrentUser === "function" ? programHtmlWithCurrentUser(String(code || "")) : String(code || "");
+    const blob = new Blob([source], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    // Open the window synchronously from the user's click to avoid popup blockers.
+    const page = window.open("about:blank", "_blank");
+    if (!page) {
+      if (typeof window.toast === "function") window.toast("ポップアップがブロックされました。ブラウザーのポップアップ許可後にもう一度押してください。");
+      URL.revokeObjectURL(url);
+      return;
+    }
+    try { page.opener = null; page.location.href = url; }
+    catch (_) { page.location = url; }
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  };
+
+  const previousRenderPostContent = window.renderPostContent;
+  if (typeof previousRenderPostContent === "function") {
+    window.renderPostContent = function(element, content, postId = null) {
+      if (!element || typeof element.appendChild !== "function") return;
+      const raw = String(content || "");
+      const match = raw.match(/```html\s*\n([\s\S]*?)\n```/i);
+      if (!match) return previousRenderPostContent.apply(this, arguments);
+      const code = match[1];
+      const id = postId || element.dataset?.postId || element.closest?.(".post")?.dataset?.postId || "";
+      if (id && typeof programPostCodeMap !== "undefined") programPostCodeMap.set(String(id), code);
+      element.innerHTML = "";
+      const rest = raw.replace(/```html\s*\n[\s\S]*?\n```/i, "").trim();
+      if (rest && typeof appendFormattedText === "function") appendFormattedText(element, rest);
+      const card = document.createElement("div"); card.className = "programPostCard";
+      const title = document.createElement("div"); title.className = "programPostTitle"; title.textContent = "💻 HTMLプログラム";
+      const preview = document.createElement("iframe"); preview.className = "programPostPreview"; preview.title = "HTMLプレビュー"; preview.setAttribute("sandbox", "allow-scripts");
+      preview.srcdoc = typeof programHtmlWithCurrentUser === "function" ? programHtmlWithCurrentUser(code) : code;
+      const actions = document.createElement("div"); actions.className = "programPostActions";
+      actions.style.cssText = "display:flex;gap:8px;flex-wrap:wrap;margin-top:8px";
+      const openCode = document.createElement("button"); openCode.type = "button"; openCode.className = "secondary"; openCode.textContent = "コードとプレビューを開く";
+      openCode.addEventListener("click", event => { event.stopPropagation(); window.openProgramPostCode(code); });
+      const openPage = document.createElement("button"); openPage.type = "button"; openPage.className = "secondary"; openPage.textContent = "実際のページで見てみる";
+      openPage.addEventListener("click", event => { event.stopPropagation(); window.openProgramPageBlob(code); });
+      actions.append(openCode, openPage); card.append(title, preview, actions); element.appendChild(card);
+    };
+  }
+
+  // Full-screen chat remains visible while resizing; only the home-chat widget is hidden on mobile.
+  const chatFrame = () => document.getElementById("chatPageFrame");
+  function keepFullscreenChatVisible() {
+    const frame = chatFrame();
+    if (!frame) return;
+    const active = document.body.classList.contains("gather-chat-overlay-open") ||
+      document.body.classList.contains("gather-chat-exclusive-screen") ||
+      document.documentElement.classList.contains("gather-chat-exclusive-screen") ||
+      frame.classList.contains("gather-chat-fixed-fullscreen");
+    if (!active) return;
+    frame.classList.add("gather-chat-fixed-fullscreen");
+    const top = matchMedia("(max-width:600px)").matches ? 42 : 44;
+    Object.entries({display:"block",visibility:"visible",opacity:"1",pointerEvents:"auto",position:"fixed",left:"0",right:"0",top:top+"px",bottom:"0",width:"100vw",height:`calc(100dvh - ${top}px)`,maxWidth:"none",minWidth:"0",minHeight:"0",zIndex:"2147483000",border:"0",margin:"0"}).forEach(([key,value])=>frame.style.setProperty(key.replace(/[A-Z]/g,m=>"-"+m.toLowerCase()),value,"important"));
+  }
+  function responsiveHomeChat() {
+    if (!matchMedia("(max-width:760px)").matches) return;
+    const widget = document.getElementById("homeChatWidget");
+    if (widget) { widget.style.setProperty("display","none","important"); widget.style.setProperty("visibility","hidden","important"); widget.style.setProperty("pointer-events","none","important"); }
+    const notice = document.getElementById("homeChatMobileNotice");
+    if (notice) notice.style.setProperty("display","block","important");
+    // Deliberately do not modify users.settings.home_chat_enabled.
+    const frame = chatFrame();
+    if (frame && !document.body.classList.contains("gather-chat-overlay-open") && !frame.classList.contains("gather-chat-fixed-fullscreen")) {
+      try { if (frame.contentWindow) frame.contentWindow.__gatherChatDisabled = true; } catch (_) {}
+    }
+  }
+  let raf = 0;
+  const schedule = () => { if (raf) return; raf = requestAnimationFrame(() => { raf = 0; keepFullscreenChatVisible(); responsiveHomeChat(); }); };
+  window.addEventListener("resize", schedule, { passive:true });
+  window.addEventListener("orientationchange", schedule, { passive:true });
+  window.addEventListener("load", schedule);
+  document.addEventListener("DOMContentLoaded", schedule);
+  const observer = new MutationObserver(schedule);
+  observer.observe(document.body, { attributes:true, attributeFilter:["class"] });
+  const frame = chatFrame(); if (frame) frame.addEventListener("load", schedule);
+  schedule();
+})();
+</script>
+
+
+<style id="gather-final-resize-cache-fixes">
+/* 最終上書き: 全画面チャットを幅変更時も維持し、案内はスマホのホームだけに限定 */
+#homeChatMobileNotice{display:none!important}
+@media(max-width:760px){body:not(.gather-chat-overlay-open):not(.gather-chat-exclusive-screen) #homeChatMobileNotice{display:block!important}}
+body.gather-chat-overlay-open #homeChatMobileNotice,
+body.gather-chat-exclusive-screen #homeChatMobileNotice,
+html.gather-chat-exclusive-screen #homeChatMobileNotice,
+.app.chat-fullscreen #homeChatMobileNotice,
+.app.chanpro-chat-wide-open #homeChatMobileNotice,
+#chatPageFrame.gather-chat-fixed-fullscreen ~ #homeChatMobileNotice{display:none!important}
+#chatPageFrame.gather-chat-fixed-fullscreen{display:block!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;position:fixed!important;left:0!important;right:0!important;top:44px!important;bottom:0!important;width:100vw!important;height:calc(100dvh - 44px)!important;max-width:none!important;min-width:0!important;min-height:0!important;z-index:2147483000!important;border:0!important}
+@media(max-width:600px){#chatPageFrame.gather-chat-fixed-fullscreen{top:42px!important;height:calc(100dvh - 42px)!important}}
+</style>
+<script id="gather-final-resize-cache-controller">
+(()=>{
+ const $=id=>document.getElementById(id), frame=()=> $('chatPageFrame'), app=()=> $('app')||document.querySelector('.app');
+ const active=()=>{const a=app(),f=frame();return !!(document.body.classList.contains('gather-chat-overlay-open')||document.body.classList.contains('gather-chat-exclusive-screen')||document.documentElement.classList.contains('gather-chat-exclusive-screen')||a?.classList.contains('chat-fullscreen')||a?.classList.contains('chanpro-chat-wide-open')||f?.classList.contains('gather-chat-fixed-fullscreen')||f?.classList.contains('gather-chat-wide-open'))};
+ function apply(){const f=frame();if(!f)return;const notice=$('homeChatMobileNotice');if(notice){const mobile=matchMedia('(max-width:760px)').matches;notice.style.setProperty('display',mobile&&!active()?'block':'none','important')}
+   if(!active())return;
+   f.classList.add('gather-chat-fixed-fullscreen');
+   const top=matchMedia('(max-width:600px)').matches?42:44;
+   for(const [k,v] of Object.entries({display:'block',visibility:'visible',opacity:'1',pointerEvents:'auto',position:'fixed',left:'0',right:'0',top:top+'px',bottom:'0',width:'100vw',height:`calc(100dvh - ${top}px)`,maxWidth:'none',minWidth:'0',minHeight:'0',zIndex:'2147483000',border:'0',margin:'0'}))f.style.setProperty(k.replace(/[A-Z]/g,m=>'-'+m.toLowerCase()),v,'important');
+ }
+ let pending=false;const schedule=()=>{if(pending)return;pending=true;requestAnimationFrame(()=>{pending=false;apply()})};
+ window.addEventListener('resize',schedule,{passive:true});window.addEventListener('orientationchange',schedule,{passive:true});window.addEventListener('load',schedule);document.addEventListener('DOMContentLoaded',schedule);
+ const f=frame();if(f)f.addEventListener('load',schedule);
+ const mo=new MutationObserver(schedule);mo.observe(document.documentElement,{attributes:true,attributeFilter:['class']});
+ // Cache successful Supabase REST GET responses in memory; clear after any write.
+ // Auth endpoints, RPCs, and non-REST requests are intentionally excluded.
+ try{
+   const rest=window.supabaseClient?.rest || (typeof supabaseClient!=='undefined'?supabaseClient.rest:null);
+   if(rest&&typeof rest.fetch==='function'&&!rest.fetch.__gatherReadCache){
+     const original=rest.fetch, entries=new Map();let bytes=0;const MAX_ENTRIES=100,MAX_BYTES=6*1024*1024;
+     const cachedFetch=async(input,init={})=>{
+       let url='',method='GET',headers;
+       try{url=typeof input==='string'?input:input.url;method=String(init.method||(input&&input.method)||'GET').toUpperCase();headers=new Headers(init.headers||(input&&input.headers)||{});}catch{}
+       const isRest=url.includes('/rest/v1/')&&!url.includes('/rest/v1/rpc/');
+       if(isRest&&method!=='GET'&&method!=='HEAD'){entries.clear();bytes=0;window.__gatherHomeLoaded=false;return original(input,init)}
+       const canCache=isRest&&method==='GET'&&url.includes('select=')&&!url.includes('Prefer: count=');
+       if(!canCache)return original(input,init);
+       const key=url+'\nrange:'+headers.get('range')+'\naccept:'+headers.get('accept')+'\nprofile:'+headers.get('accept-profile');
+       const saved=entries.get(key);
+       if(saved){entries.delete(key);entries.set(key,saved);return new Response(saved.body.slice(0),{status:saved.status,statusText:saved.statusText,headers:saved.headers})}
+       const response=await original(input,init);
+       if(!response.ok)return response;
+       try{const body=await response.clone().arrayBuffer();if(body.byteLength>MAX_BYTES/2)return response;const item={body,status:response.status,statusText:response.statusText,headers:[...response.headers.entries()]};while(entries.size>=MAX_ENTRIES||bytes+body.byteLength>MAX_BYTES){const first=entries.keys().next().value;if(first===undefined)break;bytes-=entries.get(first).body.byteLength;entries.delete(first)}entries.set(key,item);bytes+=body.byteLength}catch{}
+       return response;
+     };
+     cachedFetch.__gatherReadCache=true;rest.fetch=cachedFetch;window.__gatherSupabaseReadCache={clear:()=>{entries.clear();bytes=0},stats:()=>({entries:entries.size,bytes})};
+   }
+ }catch(e){/* cache must never block normal database requests */}
+ // Reopen pages from already rendered DOM instead of rebuilding the same page repeatedly.
+ // Explicit refresh can be requested with loadHome(true) after a user action.
+ try{
+   const originalLoad=window.loadHome;
+   if(typeof originalLoad==='function'&&!originalLoad.__gatherOpenCache){
+     const wrappedLoad=function(force=false){const host=$('homePosts');const hasContent=host&&host.querySelector('.post, .post-card, .postCard, .postItem');if(!force&&window.__gatherHomeLoaded&&hasContent)return Promise.resolve();return Promise.resolve(originalLoad.apply(this,arguments)).then(v=>{if(host&&host.querySelector('.post, .post-card, .postCard, .postItem'))window.__gatherHomeLoaded=true;return v})};
+     wrappedLoad.__gatherOpenCache=true;window.loadHome=wrappedLoad;
+   }
+ }catch{}
+ schedule();
 })();
 </script>
