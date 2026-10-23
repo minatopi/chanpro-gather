@@ -755,7 +755,7 @@ body.gather-fullscreen-chat #gatherParticipantsButton{display:none!important}
 <script id=gather-chat-overlay-final-controller>
 (()=>{
   const byId=id=>document.getElementById(id);
-  let frame=null, savedStyle=null, styleSaved=false, open=false, framePlaceholder=null, originalParent=null;
+  let frame=null, savedStyle=null, styleSaved=false, open=false, framePlaceholder=null, originalParent=null, originalNextSibling=null, ancestorStyles=[];
   function patchChatInnerLayout(enabled){
     try {
       const d=frame?.contentDocument;
@@ -774,43 +774,63 @@ body.gather-fullscreen-chat #gatherParticipantsButton{display:none!important}
       body:not(.gather-fullscreen-chat) #memberPanel:not(.gather-participants-open){display:none!important}`:'';
     } catch(e) { console.warn('チャット内部レイアウト:',e); }
   }
+  function applyFullscreenFrameStyle(){
+    if(!frame)return;
+    const top=matchMedia('(max-width:600px)').matches?42:44;
+    for(const [k,v] of Object.entries({position:'fixed',top:top+'px',left:'0',right:'0',bottom:'0',width:'100vw',height:`calc(100dvh - ${top}px)`,minWidth:'0',minHeight:'0',maxWidth:'none',display:'block',visibility:'visible',opacity:'1',pointerEvents:'auto',zIndex:'2147483000',margin:'0',padding:'0',border:'0'})) frame.style.setProperty(k.replace(/[A-Z]/g,m=>'-'+m.toLowerCase()),v,'important');
+  }
+  function moveFramePreservingState(parent, before=null){
+    if(!frame || !parent || frame.parentNode===parent) return true;
+    /* moveBefore は iframe の browsing context を維持する state-preserving DOM move。
+       appendChild による remove/insert は iframe を再読み込みし MQTT を切断する恐れがあるため使わない。 */
+    if(typeof parent.moveBefore==='function'){
+      try{parent.moveBefore(frame, before && before.parentNode===parent ? before : null);return true;}
+      catch(err){console.warn('iframeの状態維持移動に失敗:',err);return false;}
+    }
+    console.error('このブラウザーは状態維持移動に対応していないため、MQTT接続を維持した全画面移動を安全に実行できません。');
+    return false;
+  }
   function openChat(){
     frame=byId('chatPageFrame'); if(!frame)return;
+    if(open && frame.parentNode===document.body){applyFullscreenFrameStyle();return;}
     if(!styleSaved){savedStyle=frame.getAttribute('style');styleSaved=true;}
-    /* CSSのposition:fixedが親要素のtransform/overflow/stacking contextに妨げられないよう、
-       全画面中だけiframeをbody直下へ移動する。元の場所にはプレースホルダーを残す。 */
-    if(frame.parentElement!==document.body){
-      originalParent=frame.parentElement;
-      if(originalParent){
-        framePlaceholder=document.createElement('div');
-        framePlaceholder.id='gatherFullscreenChatPlaceholder';
-        framePlaceholder.setAttribute('aria-hidden','true');
-        const r=frame.getBoundingClientRect();
-        framePlaceholder.style.cssText='display:block;min-width:0;min-height:0;width:'+Math.max(0,r.width)+'px;height:'+Math.max(0,r.height)+'px;';
-        originalParent.insertBefore(framePlaceholder,frame);
-      }
-      document.body.appendChild(frame);
+    if(!originalParent){
+      originalParent=frame.parentNode;
+      originalNextSibling=frame.nextSibling;
+      framePlaceholder=document.createComment('chatPageFrame original position');
+      if(originalParent) originalParent.insertBefore(framePlaceholder,frame);
     }
+    /* iframe本体を破棄・再生成せず、state-preserving moveBefore で body 直下へ移動する。
+       src、contentWindow、MQTT client は触らず、ホーム/全画面で同じセッションを使う。 */
+    if(!moveFramePreservingState(document.body,null)) return;
+    ancestorStyles=[];
     open=true; window.__gatherFullscreenChatPinned=true;
     frame.classList.add('gather-chat-fixed-fullscreen');
-    const top=matchMedia('(max-width:600px)').matches?42:44;
-    for(const [k,v] of Object.entries({position:'fixed',top:top+'px',left:'0',right:'0',bottom:'0',width:'100vw',height:`calc(100dvh - ${top}px)`,minWidth:'0',minHeight:'0',maxWidth:'none',display:'block',visibility:'visible',opacity:'1',pointerEvents:'auto',zIndex:'2147483000'})) frame.style.setProperty(k.replace(/[A-Z]/g,m=>'-'+m.toLowerCase()),v,'important');
+    applyFullscreenFrameStyle();
     for(const id of ['chanproTopBar','chanproTopReveal']){const b=byId(id);if(b){b.classList.add('gather-chat-bar-pinned');b.style.setProperty('transform','translateY(0)','important');}}
     patchChatInnerLayout(true);
   }
   function closeChat(goHome=true){
     window.__gatherFullscreenChatPinned=false; open=false;
     frame=frame||byId('chatPageFrame');
-    if(frame){frame.classList.remove('gather-chat-fixed-fullscreen');if(savedStyle===null)frame.removeAttribute('style');else frame.setAttribute('style',savedStyle);patchChatInnerLayout(false);
-      /* 閉じるときはiframeを元のDOM位置へ戻し、ホーム側のレイアウトを復元する。 */
-      if(framePlaceholder&&framePlaceholder.parentNode){framePlaceholder.parentNode.insertBefore(frame,framePlaceholder);framePlaceholder.remove();}
-      else if(originalParent&&originalParent.isConnected&&frame.parentElement===document.body){originalParent.appendChild(frame);}
+    if(frame){
+      frame.classList.remove('gather-chat-fixed-fullscreen');
+      if(savedStyle===null)frame.removeAttribute('style');else frame.setAttribute('style',savedStyle);
+      patchChatInnerLayout(false);
+      /* moveBefore で元の場所に戻す。iframeの browsing context を維持し、再ログイン/MQTT再接続を避ける。 */
+      if(originalParent && originalParent.isConnected){
+        const before=originalNextSibling && originalNextSibling.parentNode===originalParent ? originalNextSibling : (framePlaceholder && framePlaceholder.parentNode===originalParent ? framePlaceholder.nextSibling : null);
+        moveFramePreservingState(originalParent,before);
+        if(framePlaceholder?.parentNode)framePlaceholder.remove();
+      }
     }
-    framePlaceholder=null;originalParent=null;
+    ancestorStyles=[];framePlaceholder=null;originalParent=null;originalNextSibling=null;
     for(const id of ['chanproTopBar','chanproTopReveal']){const b=byId(id);if(b){b.classList.remove('gather-chat-bar-pinned');b.style.removeProperty('transform');}}
     styleSaved=false;savedStyle=null;
     if(goHome&&typeof window.showPage==='function'){try{window.showPage('home')}catch(e){console.warn('ホーム表示切替:',e)}}
   }
+  /* ホーム⇄全画面は同じiframe要素を状態維持移動し、src/srcdocとMQTT clientを変更しない。 */
+  window.addEventListener('resize',()=>{if(open&&frame?.parentNode===document.body)applyFullscreenFrameStyle()},{passive:true});
   window.__gatherOpenFullscreenChat=openChat;
   window.__gatherCloseFullscreenChat=closeChat;
   document.addEventListener('click',ev=>{
@@ -911,14 +931,15 @@ body.gather-fullscreen-chat #gatherParticipantsButton{display:none!important}
     try {
       const win = f.contentWindow;
       if (!win) return;
-      const blockHomeAutoStart = !homeChatQuery.matches && !isFullChat();
+      const chatAlreadyConnected = !!(win.started && win.client);
+      const blockHomeAutoStart = !chatAlreadyConnected && !homeChatQuery.matches && !isFullChat();
       // スマホ・狭い画面ではホームチャットの自動接続だけを止める。
       // 全画面チャットを明示的に開いた場合は通常どおり利用可能。
       win.__gatherChatDisabled = blockHomeAutoStart;
       if (typeof win.startChat === "function" && !win.startChat.__gatherResponsiveGate) {
         const original = win.startChat;
         const wrapped = function(...args) {
-          if (!homeChatQuery.matches && !isFullChat()) {
+          if (!homeChatQuery.matches && !isFullChat() && !(win.started && win.client)) {
             win.__gatherChatDisabled = true;
             return Promise.resolve(false);
           }
@@ -931,7 +952,7 @@ body.gather-fullscreen-chat #gatherParticipantsButton{display:none!important}
       if (typeof win.syncChanProSession === "function" && !win.syncChanProSession.__gatherResponsiveGate) {
         const originalSync = win.syncChanProSession;
         const wrappedSync = function(...args) {
-          win.__gatherChatDisabled = !homeChatQuery.matches && !isFullChat();
+          win.__gatherChatDisabled = !(win.started && win.client) && !homeChatQuery.matches && !isFullChat();
           return originalSync.apply(this, args);
         };
         wrappedSync.__gatherResponsiveGate = true;
@@ -1248,7 +1269,11 @@ body.gather-fullscreen-chat #gatherParticipantsButton{display:none!important}
     // Deliberately do not modify users.settings.home_chat_enabled.
     const frame = chatFrame();
     if (frame && !document.body.classList.contains("gather-chat-overlay-open") && !frame.classList.contains("gather-chat-fixed-fullscreen")) {
-      try { if (frame.contentWindow) frame.contentWindow.__gatherChatDisabled = true; } catch (_) {}
+      try {
+        const chatWindow = frame.contentWindow;
+        /* 表示場所を切り替えるだけでは、接続済みのMQTTセッションを無効化しない。 */
+        if (chatWindow && !(chatWindow.started && chatWindow.client)) chatWindow.__gatherChatDisabled = true;
+      } catch (_) {}
     }
   }
   let raf = 0;
