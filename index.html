@@ -2041,6 +2041,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 }
 .aiCompareOption{font-size:12px;display:inline-flex;align-items:center;gap:4px}.aiCompareOption input{width:auto}.aiImagePreview{flex-wrap:wrap}.aiImagePreview>div{display:flex;gap:4px;align-items:center}
 .aiLocalImageTools{display:flex;flex-wrap:wrap;gap:4px}.aiImagePreview>div{flex-wrap:wrap}.profileNetworkDevices{margin-top:12px}.profileNetworkDevices summary{cursor:pointer}
+.aiMessageAvatar{position:relative;overflow:hidden}.aiMessageAvatar img{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:cover}.aiMessageRow.user .aiMessageBody{min-width:0;overflow-wrap:anywhere}
 </style>
 <script id="chanpro-ai-client">
 (()=>{
@@ -2315,8 +2316,25 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
   for(const line of lines){const m=line.match(/^\s*[-*]\s+(.+)/);if(m){list.push(m[1]);continue}flush();if(line.trim())out.push('<p>'+line+'</p>');else out.push('<div style="height:7px"></div>')}
   flush();let html=out.join('');blocks.forEach((block,i)=>html=html.replace(`@@CODE${i}@@`,block));return html;
  }
+ const aiAvatarUrl = "https://cdn.phototourl.com/member/2026-11-27-786e6b95-cdab-43eb-bd48-6b0ce38b0dc3.png";
+ function createAiAvatar(role) {
+  const own = role === "user";
+  const avatar = document.createElement("div");
+  avatar.className = "aiMessageAvatar";
+  avatar.textContent = own ? "\u4eba" : "\u2726";
+  const url = own ? user()?.icon_url : aiAvatarUrl;
+  if (url) {
+   const image = document.createElement("img");
+   image.alt = "";
+   image.decoding = "async";
+   image.addEventListener("error", () => image.remove(), { once: true });
+   image.src = url;
+   avatar.appendChild(image);
+  }
+  return avatar;
+ }
  function addTyping(kind="chat"){
-  removeTyping();const row=document.createElement("div");row.id="aiPendingIndicator";row.className="aiMessageRow assistant";const avatar=document.createElement("div");avatar.className="aiMessageAvatar";avatar.textContent="✦";const body=document.createElement("div");body.className="aiMessageBody";const role=document.createElement("div");role.className="aiMessageRole";role.textContent="ChanPro AI";body.appendChild(role);
+  removeTyping();const row=document.createElement("div");row.id="aiPendingIndicator";row.className="aiMessageRow assistant";const avatar=createAiAvatar("assistant");const body=document.createElement("div");body.className="aiMessageBody";const role=document.createElement("div");role.className="aiMessageRole";role.textContent="ChanPro AI";body.appendChild(role);
   if(kind==="image"||kind==="upload"){const card=document.createElement("div");card.className="aiProgressCard";card.innerHTML=kind==="image"?'<span class="aiSpinner"></span><span>画像を生成しています…<br><small>完成まで少し時間がかかります</small></span>':'<span class="aiSpinner"></span><span>画像をImgBBにアップロードしています…</span>';body.appendChild(card)}
   else{const t=document.createElement("div");t.className="aiTyping";t.innerHTML='回答を作成しています <span class="aiTypingDots"><i></i><i></i><i></i></span>';body.appendChild(t)}
   row.append(avatar,body);el("aiMessages")?.appendChild(row);scrollBottom();
@@ -2328,7 +2346,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
   if(!messages.length){const w=document.createElement("div");w.className="aiWelcome";w.innerHTML='<div class="aiWelcomeIcon">✦</div><h2>今日は何をお手伝いしましょうか？</h2><p>質問、相談、文章作成、画像についての質問などができます。</p>';box.appendChild(w);return}
   for(const m of messages){
    const row=document.createElement("div");row.className="aiMessageRow "+(m.role==="user"?"user":"assistant");
-   const avatar=document.createElement("div");avatar.className="aiMessageAvatar";avatar.textContent=m.role==="user"?"人":"✦";
+   const avatar=createAiAvatar(m.role);
    const body=document.createElement("div");body.className="aiMessageBody";
    const role=document.createElement("div");role.className="aiMessageRole";role.textContent=m.role==="user"?"あなた":"ChanPro AI";body.appendChild(role);
    if(m.content){const t=document.createElement("div");t.className="aiMessageText";if(m.role==="assistant")t.innerHTML=formatText(m.content);else t.textContent=String(m.content);body.appendChild(t)}
@@ -2508,19 +2526,46 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
   selectedImages = [];
   renderSelectedImages();
  }
- async function uploadSelectedImages() {
-  const results = await Promise.allSettled(selectedImages.map(async entry => {
-   if (entry.url) return entry.url;
+ const cachedAiImageUploads = new Map();
+ let imageCacheOwner;
+ async function uploadAiImage(blob) {
+  const owner = user()?.id;
+  if (owner !== imageCacheOwner) {
+   cachedAiImageUploads.clear();
+   imageCacheOwner = owner;
+  }
+  const bytes = globalThis.crypto?.subtle ? await blob.arrayBuffer() : null;
+  const digest = bytes ? await crypto.subtle.digest("SHA-256", bytes) : null;
+  const key = digest && owner === imageCacheOwner
+   ? Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("")
+   : null;
+  if (key && cachedAiImageUploads.has(key)) return cachedAiImageUploads.get(key);
+  const uploading = (async () => {
    const imageBase64 = await new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result));
     reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(entry.blob);
+    reader.readAsDataURL(blob);
    });
+   if (user()?.id !== owner) throw new Error("Account changed during image upload");
    const { imageUrl } = await request("upload", { imageBase64 });
    if (!imageUrl) throw new Error("Image URL missing");
-   entry.url = imageUrl;
    return imageUrl;
+  })();
+  if (key) {
+   if (cachedAiImageUploads.size >= 64) cachedAiImageUploads.delete(cachedAiImageUploads.keys().next().value);
+   cachedAiImageUploads.set(key, uploading);
+  }
+  try { return await uploading; }
+  catch (error) {
+   if (key && cachedAiImageUploads.get(key) === uploading) cachedAiImageUploads.delete(key);
+   throw error;
+  }
+ }
+ async function uploadSelectedImages() {
+  const results = await Promise.allSettled(selectedImages.map(async entry => {
+   if (!entry.url) entry.url = await uploadAiImage(entry.blob);
+   return entry.url;
   }));
   const failed = results.find(result => result.status === "rejected");
   if (failed) throw failed.reason;
