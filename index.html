@@ -422,7 +422,11 @@ if (String(e) === String(currentUser?.id)) {
 window.__profileMusicMap ||= {};
 if (t.profile_music?.music_id) window.__profileMusicMap[t.id] = t.profile_music;
 const { following: s, followers: a, followingCount: l, postCount: c } = profileData;
-const d=Array.isArray(t.program_urls)?t.program_urls.filter(Boolean):[],u=Array.isArray(t.program_views)?t.program_views.reduce(((e,t)=>e+(Number(t)||0)),0):0,p=Array.isArray(t.program_likes)?t.program_likes.reduce(((e,t)=>e+(Number(t)||0)),0):0;Array.isArray(t.program_views)&&t.program_views.some((e=>null!=e)),Array.isArray(t.program_likes)&&t.program_likes.some((e=>null!=e));let m="";d.length&&(m=`\n    <div class="programStats" style="margin-top:15px;">\n\n      \n        <h3 style="margin-bottom:10px; display:flex; align-items:center; gap:12px;">\n          ちゃんプロで公開した作品の総閲覧、いいね数\n          <a\n            href="https://minatopi.github.io/chanpro/Scrng.html"\n            target="_blank"\n            rel="noopener noreferrer"\n            style="font-size:12px; padding:3px 8px; border-radius:4px;"\n          >\n            スクレイピングに関する概要\n          </a>\n        </h3>\n\n        <div\n          style="\n            display:flex;\n            gap:30px;\n            margin:20px 0;\n            align-items:center;\n          "\n        >\n\n          \n            <div style="text-align:center;">\n              <div style="font-size:28px;font-weight:700;">\n                👀 ${u.toLocaleString("ja-JP")}\n              </div>\n              <div style="font-size:14px;color:#657786;margin-top:3px;">\n                閲覧\n              </div>\n            </div>\n          \n\n          \n            <div style="text-align:center;">\n              <div style="font-size:28px;font-weight:700;">\n                ❤️ ${p.toLocaleString("ja-JP")}\n              </div>\n              <div style="font-size:14px;color:#657786;margin-top:3px;">\n                いいね\n              </div>\n            </div>\n          \n\n        </div>\n      \n\n      <div\n        style="\n          display:flex;\n          flex-direction:column;\n          gap:8px;\n        "\n      >\n        ${d.map((e=>`\n          <a\n            href="${escapeHTML(e)}"\n            target="_blank"\n            rel="noopener noreferrer"\n            style="\n              display:inline-block;\n              padding:8px 14px;\n              background:#333;\n              color:#fff;\n              text-decoration:none;\n              border-radius:6px;\n              text-align:center;\n            "\n          >\n            作品を見に行く(ctrl+クリック)\n          </a>\n        `)).join("")}\n      </div>\n\n    </div>\n  `);$("profilePage").innerHTML=`\n      <div\n        class="profileCover"\n        style="\n          background-image:url('${escapeHTML(t.cover_url||"")}');\n        "\n      ></div>\n\n      <div class="profileInfo">\n\n        <img\n          class="profileBigAvatar"\n          src="${escapeHTML(avatarURL(t.icon_url,100))}"\n          onerror="this.src='${escapeHTML(avatarURL("",100))}'"\n        >\n\n        <div class="profileActions">\n\n          ${e===currentUser.id?'\n            <button\n              class="secondary"\n              onclick="openProfileEdit()"\n            >\n              プロフィール編集\n            </button>\n          ':`\n            <div\n              style="\n                display:flex;\n                gap:8px;\n                flex-wrap:wrap;\n              "\n            >\n              <button\n                class="${s?"secondary":"primary"}"\n                onclick="toggleFollow('${t.id}')"\n              >\n                ${s?"フォロー中":"フォロー"}\n              </button>\n\n              <button\n                class="secondary"\n                onclick="openDM('${t.id}')"\n              >\n                ✉️ DM\n              </button>\n\n              <button\n                class="secondary"\n                type="button"\n                onclick="openPointDonation('${t.id}','${escapeHTML(t.username||"ユーザー")}')"\n              >\n                🎁 ポイントを寄付\n              </button>\n            </div>\n          `}\n\n        </div>\n\n        <h2>\n          ${escapeHTML(t.username||"ユーザー")}\n          ${userBadges(t,22)}\n        </h2>\n\n        <div class="profileHandle">\n          @${escapeHTML(t.username||"")}\n        </div>\n\n        <div class="profileBio">${linkifyText((t.profile||"自己紹介はありません").trim())}\n        </div>\n\n        <div class="profileExtraStats">アカウント作成: ${t.created_at?new Date(t.created_at).toLocaleDateString("ja-JP"):""}　ポイント: ${t.points||0}　連続ログイン: ${t.login_streak||0}日　連続投稿: ${(Number(t.consecutive_post_weeks)||0)*7}日</div>\n\n        ${renderProfileMusic(t)}\n\n        ${m}\n\n        <div class="profileStats">\n\n          <div\n            class="profileStatClickable"\n            onclick="showFollowList('${t.id}','following')"\n          >\n            <b>${l}</b>\n            <span>フォロー中</span>\n          </div>\n\n          <div\n            class="profileStatClickable"\n            onclick="showFollowList('${t.id}','followers')"\n          >\n            <b>${a}</b>\n            <span>フォロワー</span>\n          </div>\n\n          <div>\n            <b>${c}</b>\n            <span>投稿</span>\n          </div>\n\n        </div>\n\n      </div>\n    `;const { posts: h, reposts: v, repostPosts: b } = profileData;
+const devices = Array.isArray(profileData.networkDevices) ? profileData.networkDevices : [];
+const networkDeviceList = devices.length ? '<details class="profileNetworkDevices"><summary>\u540c\u3058\u56de\u7dda\u3067\u30ed\u30b0\u30a4\u30f3\u3057\u305f\u7aef\u672b</summary><ul>'
+  + devices.map(device => '<li>' + escapeHTML(device.platform || "\u4e0d\u660e\u306a\u7aef\u672b") + ' \u00b7 '
+    + escapeHTML(formatDate(device.last_login_at)) + '</li>').join('') + '</ul></details>' : "";
+const d=Array.isArray(t.program_urls)?t.program_urls.filter(Boolean):[],u=Array.isArray(t.program_views)?t.program_views.reduce(((e,t)=>e+(Number(t)||0)),0):0,p=Array.isArray(t.program_likes)?t.program_likes.reduce(((e,t)=>e+(Number(t)||0)),0):0;Array.isArray(t.program_views)&&t.program_views.some((e=>null!=e)),Array.isArray(t.program_likes)&&t.program_likes.some((e=>null!=e));let m="";d.length&&(m=`\n    <div class="programStats" style="margin-top:15px;">\n\n      \n        <h3 style="margin-bottom:10px; display:flex; align-items:center; gap:12px;">\n          ちゃんプロで公開した作品の総閲覧、いいね数\n          <a\n            href="https://minatopi.github.io/chanpro/Scrng.html"\n            target="_blank"\n            rel="noopener noreferrer"\n            style="font-size:12px; padding:3px 8px; border-radius:4px;"\n          >\n            スクレイピングに関する概要\n          </a>\n        </h3>\n\n        <div\n          style="\n            display:flex;\n            gap:30px;\n            margin:20px 0;\n            align-items:center;\n          "\n        >\n\n          \n            <div style="text-align:center;">\n              <div style="font-size:28px;font-weight:700;">\n                👀 ${u.toLocaleString("ja-JP")}\n              </div>\n              <div style="font-size:14px;color:#657786;margin-top:3px;">\n                閲覧\n              </div>\n            </div>\n          \n\n          \n            <div style="text-align:center;">\n              <div style="font-size:28px;font-weight:700;">\n                ❤️ ${p.toLocaleString("ja-JP")}\n              </div>\n              <div style="font-size:14px;color:#657786;margin-top:3px;">\n                いいね\n              </div>\n            </div>\n          \n\n        </div>\n      \n\n      <div\n        style="\n          display:flex;\n          flex-direction:column;\n          gap:8px;\n        "\n      >\n        ${d.map((e=>`\n          <a\n            href="${escapeHTML(e)}"\n            target="_blank"\n            rel="noopener noreferrer"\n            style="\n              display:inline-block;\n              padding:8px 14px;\n              background:#333;\n              color:#fff;\n              text-decoration:none;\n              border-radius:6px;\n              text-align:center;\n            "\n          >\n            作品を見に行く(ctrl+クリック)\n          </a>\n        `)).join("")}\n      </div>\n\n    </div>\n  `);$("profilePage").innerHTML=`\n      <div\n        class="profileCover"\n        style="\n          background-image:url('${escapeHTML(t.cover_url||"")}');\n        "\n      ></div>\n\n      <div class="profileInfo">\n\n        <img\n          class="profileBigAvatar"\n          src="${escapeHTML(avatarURL(t.icon_url,100))}"\n          onerror="this.src='${escapeHTML(avatarURL("",100))}'"\n        >\n\n        <div class="profileActions">\n\n          ${e===currentUser.id?'\n            <button\n              class="secondary"\n              onclick="openProfileEdit()"\n            >\n              プロフィール編集\n            </button>\n          ':`\n            <div\n              style="\n                display:flex;\n                gap:8px;\n                flex-wrap:wrap;\n              "\n            >\n              <button\n                class="${s?"secondary":"primary"}"\n                onclick="toggleFollow('${t.id}')"\n              >\n                ${s?"フォロー中":"フォロー"}\n              </button>\n\n              <button\n                class="secondary"\n                onclick="openDM('${t.id}')"\n              >\n                ✉️ DM\n              </button>\n\n              <button\n                class="secondary"\n                type="button"\n                onclick="openPointDonation('${t.id}','${escapeHTML(t.username||"ユーザー")}')"\n              >\n                🎁 ポイントを寄付\n              </button>\n            </div>\n          `}\n\n        </div>\n\n        <h2>\n          ${escapeHTML(t.username||"ユーザー")}\n          ${userBadges(t,22)}\n        </h2>\n\n        <div class="profileHandle">\n          @${escapeHTML(t.username||"")}\n        </div>\n\n        <div class="profileBio">${linkifyText((t.profile||"自己紹介はありません").trim())}\n        </div>\n\n        <div class="profileExtraStats">アカウント作成: ${t.created_at?new Date(t.created_at).toLocaleDateString("ja-JP"):""}　ポイント: ${t.points||0}　連続ログイン: ${t.login_streak||0}日　連続投稿: ${(Number(t.consecutive_post_weeks)||0)*7}日</div>\n\n        ${networkDeviceList}\n\n        ${renderProfileMusic(t)}\n\n        ${m}\n\n        <div class="profileStats">\n\n          <div\n            class="profileStatClickable"\n            onclick="showFollowList('${t.id}','following')"\n          >\n            <b>${l}</b>\n            <span>フォロー中</span>\n          </div>\n\n          <div\n            class="profileStatClickable"\n            onclick="showFollowList('${t.id}','followers')"\n          >\n            <b>${a}</b>\n            <span>フォロワー</span>\n          </div>\n\n          <div>\n            <b>${c}</b>\n            <span>投稿</span>\n          </div>\n\n        </div>\n\n      </div>\n    `;const { posts: h, reposts: v, repostPosts: b } = profileData;
 const _ = h, L = b, C = new Map;for(const e of L)C.set(e.id,e);const M=[];for(const e of _)M.push({type:"post",post:e,sortDate:new Date(e.created_at).getTime()});for(const t of v||[]){const n=C.get(t.post_id);n&&M.push({type:"repost",post:n,sortDate:new Date(t.created_at).getTime(),repostedAt:t.created_at,repostUserId:e})}M.sort(((e,t)=>{const n="post"===e.type&&!0===e.post.is_pinned,o="post"===t.type&&!0===t.post.is_pinned;return n!==o?o?1:-1:t.sortDate-e.sortDate}));const k=document.createElement("div");if(k.id="profilePosts",$("profilePage").appendChild(k),!M.length)return void(k.innerHTML='<div class="empty">まだ投稿がありません</div>');const meta = profileData.meta;
 const S = buildPostMeta(meta.likes, [], meta.reposts, meta.bookmarks, meta.pollVotes);
 for (const [id, count] of meta.replyCounts) S.replies.set(id, count);
@@ -2036,6 +2040,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
  .aiComposerRight{width:100%;justify-content:space-between}
 }
 .aiCompareOption{font-size:12px;display:inline-flex;align-items:center;gap:4px}.aiCompareOption input{width:auto}.aiImagePreview{flex-wrap:wrap}.aiImagePreview>div{display:flex;gap:4px;align-items:center}
+.aiLocalImageTools{display:flex;flex-wrap:wrap;gap:4px}.aiImagePreview>div{flex-wrap:wrap}.profileNetworkDevices{margin-top:12px}.profileNetworkDevices summary{cursor:pointer}
 </style>
 <script id="chanpro-ai-client">
 (()=>{
@@ -2479,7 +2484,21 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
     selectedImages = selectedImages.filter(item => item !== entry);
     renderSelectedImages();
    };
-   item.append(image, remove);
+   item.append(image);
+   if (entry.blob) {
+    const controls = document.createElement("div");
+    controls.className = "aiLocalImageTools";
+    for (const [change, label] of [["rotate", "\u56de\u8ee2"], ["flip", "\u53cd\u8ee2"], ["gray", "\u767d\u9ed2"]]) {
+     const button = document.createElement("button");
+     button.type = "button";
+     button.className = "secondary";
+     button.textContent = label;
+     button.onclick = () => editImageLocally(entry, change);
+     controls.appendChild(button);
+    }
+    item.appendChild(controls);
+   }
+   item.appendChild(remove);
    box.appendChild(item);
   }
   el("aiImageButton").textContent = selectedImages.length ? "\u753b\u50cf\u7de8\u96c6" : "\u753b\u50cf\u751f\u6210";
@@ -2489,20 +2508,53 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
   selectedImages = [];
   renderSelectedImages();
  }
- function uploadSelectedImages() {
-  return Promise.all(selectedImages.map(async entry => {
+ async function uploadSelectedImages() {
+  const results = await Promise.allSettled(selectedImages.map(async entry => {
    if (entry.url) return entry.url;
-   const base64 = await new Promise((resolve, reject) => {
+   const imageBase64 = await new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result));
     reader.onerror = () => reject(reader.error);
     reader.readAsDataURL(entry.blob);
    });
-   const data = await request("upload", { imageBase64: base64 });
-   if (!data.imageUrl) throw new Error("ImgBB image URL missing");
-   entry.url = data.imageUrl;
-   return entry.url;
+   const { imageUrl } = await request("upload", { imageBase64 });
+   if (!imageUrl) throw new Error("Image URL missing");
+   entry.url = imageUrl;
+   return imageUrl;
   }));
+  const failed = results.find(result => result.status === "rejected");
+  if (failed) throw failed.reason;
+  return results.map(result => result.value);
+ }
+ async function editImageLocally(entry, change) {
+  if (busy) return;
+  if (!entry.blob) {
+   status("\u7aef\u672b\u3067\u7de8\u96c6\u3059\u308b\u5834\u5408\u306f\u3001\u753b\u50cf\u3092\u4fdd\u5b58\u3057\u3066\u304b\u3089\u6dfb\u4ed8\u3057\u3066\u304f\u3060\u3055\u3044", true);
+   return;
+  }
+  setBusy(true);
+  let bitmap;
+  try {
+   bitmap = await createImageBitmap(entry.blob);
+   const rotated = change === "rotate";
+   const canvas = document.createElement("canvas");
+   canvas.width = rotated ? bitmap.height : bitmap.width;
+   canvas.height = rotated ? bitmap.width : bitmap.height;
+   const context = canvas.getContext("2d");
+   if (rotated) { context.translate(canvas.width, 0); context.rotate(Math.PI / 2); }
+   if (change === "flip") { context.translate(canvas.width, 0); context.scale(-1, 1); }
+   if (change === "gray") context.filter = "grayscale(1)";
+   context.drawImage(bitmap, 0, 0);
+   const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/jpeg", .82));
+   if (!blob || blob.size > 3145728) throw new Error("\u7de8\u96c6\u5f8c\u306e\u753b\u50cf\u3092\u4fdd\u5b58\u3067\u304d\u307e\u305b\u3093");
+   URL.revokeObjectURL(entry.preview);
+   entry.blob = blob;
+   entry.preview = URL.createObjectURL(blob);
+   delete entry.url;
+   renderSelectedImages();
+   status("");
+  } catch (error) { status(error.message, true); }
+  finally { bitmap?.close(); setBusy(false); }
  }
  function setBusy(value) {
   busy = value;
